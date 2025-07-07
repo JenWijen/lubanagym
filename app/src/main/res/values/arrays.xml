@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="membership_types">
+        <item>BASIC</item>
+        <item>PREMIUM</item>
+        <item>VIP</item>
+    </string-array>
+
+    <string-array name="gender_options">
+        <item>Pilih Gender</item>
+        <item>Laki-laki</item>
+        <item>Perempuan</item>
+    </string-array>
+</resources>

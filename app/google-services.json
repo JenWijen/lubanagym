@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "303026138882",
+    "project_id": "lubanagym-e5c54",
+    "storage_bucket": "lubanagym-e5c54.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303026138882:android:76c909acb68e7c166fdc1b",
+        "android_client_info": {
+          "package_name": "com.duta.lubanagym"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "303026138882-o3nb43dbqf3jvg3sujprflms6kuk6f6m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB48jGZfy-_HTEQZmDkMiRaOZ_ASodckhM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "303026138882-o3nb43dbqf3jvg3sujprflms6kuk6f6m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
