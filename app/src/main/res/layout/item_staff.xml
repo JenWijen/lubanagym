@@ -83,7 +83,19 @@
                 <Switch
                     android:id="@+id/switchStatus"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- NEW: Delete Button -->
+                <Button
+                    android:id="@+id/btnDeleteStaff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="🗑️ Hapus"
+                    android:textSize="10sp"
+                    android:backgroundTint="@color/red"
+                    android:textColor="@color/white"
+                    style="@style/Widget.MaterialComponents.Button" />
 
             </LinearLayout>
 

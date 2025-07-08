@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.duta.lubanagym.databinding.ActivityUserManagementBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class UserManagementActivity : AppCompatActivity() {
 
@@ -40,12 +41,16 @@ class UserManagementActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        userAdapter = UserAdapter { user, newRole ->
-            // Konfirmasi perubahan role dengan info cleanup
-            showRoleChangeConfirmation(user.username, user.role, newRole) {
-                viewModel.updateUserRole(user.id, user.role, newRole)
+        userAdapter = UserAdapter(
+            onRoleChange = { user, newRole ->
+                showRoleChangeConfirmation(user.username, user.role, newRole) {
+                    viewModel.updateUserRole(user.id, user.role, newRole)
+                }
+            },
+            onDeleteUser = { user -> // NEW: Delete user callback
+                showDeleteUserConfirmation(user)
             }
-        }
+        )
 
         binding.rvUsers.apply {
             adapter = userAdapter
@@ -73,18 +78,55 @@ class UserManagementActivity : AppCompatActivity() {
         viewModel.updateResult.observe(this) { result ->
             result.onSuccess { message ->
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-                loadUsers() // Refresh data
+                loadUsers()
             }.onFailure { error ->
                 Toast.makeText(this, "❌ Error: ${error.message}", Toast.LENGTH_LONG).show()
             }
         }
+
+        // NEW: Observer for delete result
+        viewModel.deleteResult.observe(this) { result ->
+            result.onSuccess { message ->
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                loadUsers()
+            }.onFailure { error ->
+                Toast.makeText(this, "❌ Error menghapus: ${error.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    // NEW: Show delete confirmation dialog
+    private fun showDeleteUserConfirmation(user: com.duta.lubanagym.data.model.User) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("🗑️ Konfirmasi Hapus User")
+            .setMessage("""
+                ⚠️ PERINGATAN: Ini akan menghapus secara permanen!
+                
+                👤 User: ${user.username}
+                📧 Email: ${user.email}
+                🏷️ Role: ${user.role.uppercase()}
+                
+                🗑️ Yang akan dihapus:
+                • Data user dari sistem
+                • Data profil ${user.role} (jika ada)
+                • Semua data terkait
+                
+                ❌ Tindakan ini TIDAK DAPAT dibatalkan!
+            """.trimIndent())
+            .setPositiveButton("🗑️ Ya, Hapus Permanen") { _, _ ->
+                viewModel.deleteUser(user.id, user.role)
+            }
+            .setNegativeButton("❌ Batal", null)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setCancelable(false)
+            .show()
     }
 
     private fun showRoleChangeConfirmation(username: String, oldRole: String, newRole: String, onConfirm: () -> Unit) {
         val roleInfo = mapOf(
             "member" to Pair("👥 Member", "Akses gym standar, data member"),
             "staff" to Pair("👨‍💼 Staff", "Bantuan operasional, data staff"),
-            "trainer" to Pair("🏋️ Trainer", "Pelatih fitness, data trainer"), // NEW
+            "trainer" to Pair("🏋️ Trainer", "Pelatih fitness, data trainer"),
             "admin" to Pair("👨‍💻 Admin", "Akses penuh sistem")
         )
 
@@ -102,7 +144,7 @@ class UserManagementActivity : AppCompatActivity() {
             else -> "✨ ${newRoleInfo.second} akan dibuat otomatis"
         }
 
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("🔄 Konfirmasi Perubahan Role")
             .setMessage("""
                 👤 User: $username
@@ -121,7 +163,7 @@ class UserManagementActivity : AppCompatActivity() {
             }
             .setNegativeButton("❌ Batal") { dialog, _ ->
                 dialog.dismiss()
-                loadUsers() // Refresh to reset spinner
+                loadUsers()
             }
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setCancelable(false)

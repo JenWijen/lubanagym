@@ -85,15 +85,27 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp" />
 
+                <!-- NEW: Edit Button -->
+                <Button
+                    android:id="@+id/btnEditTrainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="✏️ Edit"
+                    android:textSize="10sp"
+                    android:backgroundTint="@color/blue"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="4dp"
+                    style="@style/Widget.MaterialComponents.Button" />
+
                 <Button
                     android:id="@+id/btnDelete"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Hapus"
+                    android:layout_height="32dp"
+                    android:text="🗑️ Hapus"
                     android:textSize="10sp"
                     android:backgroundTint="@color/red"
                     android:textColor="@color/white"
-                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+                    style="@style/Widget.MaterialComponents.Button" />
 
             </LinearLayout>
 

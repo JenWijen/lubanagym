@@ -20,6 +20,10 @@ class StaffManagementViewModel : ViewModel() {
     private val _updateResult = MutableLiveData<Result<Unit>>()
     val updateResult: LiveData<Result<Unit>> = _updateResult
 
+    // NEW: Delete result LiveData
+    private val _deleteResult = MutableLiveData<Result<Unit>>()
+    val deleteResult: LiveData<Result<Unit>> = _deleteResult
+
     fun loadStaff() {
         viewModelScope.launch {
             try {
@@ -38,6 +42,18 @@ class StaffManagementViewModel : ViewModel() {
                 _updateResult.postValue(result)
             } catch (e: Exception) {
                 _updateResult.postValue(Result.failure(e))
+            }
+        }
+    }
+
+    // NEW: Delete staff function
+    fun deleteStaff(staffId: String) {
+        viewModelScope.launch {
+            try {
+                val result = staffRepository.deleteStaff(staffId)
+                _deleteResult.postValue(result)
+            } catch (e: Exception) {
+                _deleteResult.postValue(Result.failure(e))
             }
         }
     }

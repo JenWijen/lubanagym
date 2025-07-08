@@ -22,6 +22,8 @@ import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.Equipment
 import com.duta.lubanagym.databinding.ActivityEquipmentManagementBinding
 import com.duta.lubanagym.databinding.DialogAddEquipmentBinding
+import com.duta.lubanagym.databinding.DialogEquipmentDetailBinding
+import com.duta.lubanagym.databinding.DialogEditEquipmentBinding
 import com.duta.lubanagym.utils.CloudinaryService
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
@@ -37,6 +39,8 @@ class EquipmentManagementActivity : AppCompatActivity() {
     private var selectedImageUri: Uri? = null
     private var currentEquipmentId: String? = null
     private var currentDialogBinding: DialogAddEquipmentBinding? = null
+    private var currentEditDialogBinding: DialogEditEquipmentBinding? = null
+    private var isEditMode = false
 
     // Activity result launchers
     private lateinit var imagePickerLauncher: ActivityResultLauncher<Intent>
@@ -57,7 +61,6 @@ class EquipmentManagementActivity : AppCompatActivity() {
     }
 
     private fun setupImagePicker() {
-        // Setup image picker launcher dengan Intent manual
         imagePickerLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -73,7 +76,6 @@ class EquipmentManagementActivity : AppCompatActivity() {
             }
         }
 
-        // Setup permission launcher untuk multiple permissions
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
@@ -87,118 +89,6 @@ class EquipmentManagementActivity : AppCompatActivity() {
                 openImagePicker()
             } else {
                 showPermissionDeniedDialog()
-            }
-        }
-    }
-
-    private fun pickImage() {
-        // Check permission berdasarkan Android version
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-
-        when {
-            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
-                openImagePicker()
-            }
-
-            shouldShowRequestPermissionRationale(permission) -> {
-                showPermissionRationaleDialog()
-            }
-
-            else -> {
-                requestPermission()
-            }
-        }
-    }
-
-    private fun requestPermission() {
-        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
-        } else {
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-
-        permissionLauncher.launch(permissions)
-    }
-
-    private fun showPermissionRationaleDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("🔐 Permission Diperlukan")
-            .setMessage("Aplikasi memerlukan akses ke galeri untuk memilih foto alat gym.\n\nTanpa permission ini, Anda tidak dapat menambahkan foto.")
-            .setPositiveButton("✅ Berikan Permission") { _, _ ->
-                requestPermission()
-            }
-            .setNegativeButton("❌ Batal") { dialog, _ ->
-                dialog.dismiss()
-                Toast.makeText(this, "Anda dapat menambah foto nanti melalui tombol 'Upload Foto'", Toast.LENGTH_LONG).show()
-            }
-            .setCancelable(false)
-            .show()
-    }
-
-    private fun showPermissionDeniedDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("⚠️ Permission Ditolak")
-            .setMessage("Permission galeri ditolak. Anda masih dapat:\n\n• Menambah alat gym tanpa foto\n• Menambah foto nanti dari list equipment\n\nUntuk mengaktifkan permission, buka Settings > Apps > Lubana Gym > Permissions")
-            .setPositiveButton("⚙️ Buka Settings") { _, _ ->
-                openAppSettings()
-            }
-            .setNegativeButton("📝 Lanjut Tanpa Foto") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-    }
-
-    private fun openAppSettings() {
-        try {
-            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            intent.data = Uri.parse("package:$packageName")
-            startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(this, "Tidak dapat membuka settings", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun openImagePicker() {
-        try {
-            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
-                type = "image/*"
-                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png", "image/jpg"))
-            }
-
-            // Fallback jika ACTION_PICK tidak tersedia
-            if (intent.resolveActivity(packageManager) != null) {
-                imagePickerLauncher.launch(intent)
-            } else {
-                val fallbackIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                    type = "image/*"
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                }
-                imagePickerLauncher.launch(Intent.createChooser(fallbackIntent, "Pilih Foto"))
-            }
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error membuka galeri: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun updateImagePreview(uri: Uri) {
-        currentDialogBinding?.let { dialogBinding ->
-            try {
-                Glide.with(this)
-                    .load(uri)
-                    .placeholder(R.drawable.ic_equipment_placeholder)
-                    .error(R.drawable.ic_equipment_placeholder)
-                    .centerCrop()
-                    .into(dialogBinding.ivPreview)
-
-                dialogBinding.ivPreview.visibility = View.VISIBLE
-                dialogBinding.btnSelectImage.text = "🔄 Ganti Foto"
-
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error loading preview: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -234,13 +124,258 @@ class EquipmentManagementActivity : AppCompatActivity() {
             },
             onUploadImage = { equipment ->
                 currentEquipmentId = equipment.id
+                isEditMode = false
                 pickImage()
+            },
+            onViewDetail = { equipment -> // NEW: Detail callback
+                showEquipmentDetail(equipment)
+            },
+            onEditEquipment = { equipment -> // NEW: Edit callback
+                showEditEquipmentDialog(equipment)
             }
         )
 
         binding.rvEquipment.apply {
             adapter = equipmentAdapter
             layoutManager = LinearLayoutManager(this@EquipmentManagementActivity)
+        }
+    }
+
+    // NEW: Show equipment detail dialog
+    private fun showEquipmentDetail(equipment: Equipment) {
+        val dialogBinding = DialogEquipmentDetailBinding.inflate(layoutInflater)
+
+        dialogBinding.apply {
+            tvEquipmentName.text = equipment.name
+            tvEquipmentCategory.text = equipment.category
+            tvEquipmentDescription.text = equipment.description
+            tvEquipmentInstructions.text = equipment.instructions
+
+            // Set availability status
+            tvAvailabilityStatus.text = if (equipment.isAvailable) "✅ Tersedia" else "❌ Tidak Tersedia"
+            tvAvailabilityStatus.setTextColor(
+                getColor(if (equipment.isAvailable) android.R.color.holo_green_dark else android.R.color.holo_red_dark)
+            )
+
+            // Load image
+            if (equipment.imageUrl.isNotEmpty()) {
+                Glide.with(this@EquipmentManagementActivity)
+                    .load(equipment.imageUrl)
+                    .placeholder(R.drawable.ic_equipment_placeholder)
+                    .error(R.drawable.ic_equipment_placeholder)
+                    .into(ivEquipmentImage)
+            } else {
+                ivEquipmentImage.setImageResource(R.drawable.ic_equipment_placeholder)
+            }
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.btnEditEquipment.setOnClickListener {
+            dialog.dismiss()
+            showEditEquipmentDialog(equipment)
+        }
+
+        dialogBinding.btnCloseDetail.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    // NEW: Show edit equipment dialog
+    private fun showEditEquipmentDialog(equipment: Equipment) {
+        val dialogBinding = DialogEditEquipmentBinding.inflate(layoutInflater)
+        currentEditDialogBinding = dialogBinding
+        selectedImageUri = null
+        isEditMode = true
+
+        dialogBinding.apply {
+            // Fill current data
+            etEditName.setText(equipment.name)
+            etEditCategory.setText(equipment.category)
+            etEditDescription.setText(equipment.description)
+            etEditInstructions.setText(equipment.instructions)
+            switchEditAvailable.isChecked = equipment.isAvailable
+
+            // Load current image
+            if (equipment.imageUrl.isNotEmpty()) {
+                Glide.with(this@EquipmentManagementActivity)
+                    .load(equipment.imageUrl)
+                    .placeholder(R.drawable.ic_equipment_placeholder)
+                    .error(R.drawable.ic_equipment_placeholder)
+                    .into(ivEditPreview)
+            }
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("✏️ Edit Equipment")
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.btnChangeImage.setOnClickListener {
+            currentEquipmentId = equipment.id
+            pickImage()
+        }
+
+        dialogBinding.btnSaveEdit.setOnClickListener {
+            saveEditEquipment(equipment, dialogBinding, dialog)
+        }
+
+        dialogBinding.btnCancelEdit.setOnClickListener {
+            dialog.dismiss()
+            currentEditDialogBinding = null
+        }
+
+        dialog.setOnDismissListener {
+            currentEditDialogBinding = null
+        }
+
+        dialog.show()
+    }
+
+    private fun saveEditEquipment(equipment: Equipment, dialogBinding: DialogEditEquipmentBinding, dialog: AlertDialog) {
+        val name = dialogBinding.etEditName.text.toString().trim()
+        val category = dialogBinding.etEditCategory.text.toString().trim()
+        val description = dialogBinding.etEditDescription.text.toString().trim()
+        val instructions = dialogBinding.etEditInstructions.text.toString().trim()
+        val isAvailable = dialogBinding.switchEditAvailable.isChecked
+
+        if (validateEquipmentInput(name, description, category, instructions)) {
+            lifecycleScope.launch {
+                try {
+                    binding.progressBar.visibility = View.VISIBLE
+
+                    var imageUrl = equipment.imageUrl // Keep existing image by default
+
+                    // Upload new image if selected
+                    selectedImageUri?.let { uri ->
+                        Toast.makeText(this@EquipmentManagementActivity, "📤 Mengupload foto baru...", Toast.LENGTH_SHORT).show()
+                        val uploadResult = cloudinaryService.uploadImage(uri, "equipment")
+                        uploadResult.onSuccess { url ->
+                            imageUrl = url
+                            Toast.makeText(this@EquipmentManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                        }.onFailure {
+                            Toast.makeText(this@EquipmentManagementActivity, "⚠️ Upload foto gagal, menggunakan foto lama", Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                    // Update equipment
+                    val updates = mapOf(
+                        "name" to name,
+                        "description" to description,
+                        "category" to category,
+                        "instructions" to instructions,
+                        "imageUrl" to imageUrl,
+                        "isAvailable" to isAvailable,
+                        "updatedAt" to System.currentTimeMillis()
+                    )
+
+                    viewModel.updateEquipment(equipment.id, updates)
+                    dialog.dismiss()
+
+                } catch (e: Exception) {
+                    Toast.makeText(this@EquipmentManagementActivity, "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    private fun pickImage() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
+                openImagePicker()
+            }
+            shouldShowRequestPermissionRationale(permission) -> {
+                showPermissionRationaleDialog()
+            }
+            else -> {
+                requestPermission()
+            }
+        }
+    }
+
+    private fun requestPermission() {
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        permissionLauncher.launch(permissions)
+    }
+
+    private fun showPermissionRationaleDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("🔐 Permission Diperlukan")
+            .setMessage("Aplikasi memerlukan akses ke galeri untuk memilih foto alat gym.")
+            .setPositiveButton("✅ Berikan Permission") { _, _ ->
+                requestPermission()
+            }
+            .setNegativeButton("❌ Batal") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun showPermissionDeniedDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("⚠️ Permission Ditolak")
+            .setMessage("Permission galeri ditolak. Anda masih dapat menambah alat gym tanpa foto.")
+            .setPositiveButton("⚙️ Buka Settings") { _, _ ->
+                openAppSettings()
+            }
+            .setNegativeButton("📝 Lanjut", null)
+            .show()
+    }
+
+    private fun openAppSettings() {
+        try {
+            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = Uri.parse("package:$packageName")
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Tidak dapat membuka settings", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openImagePicker() {
+        try {
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
+                type = "image/*"
+            }
+            imagePickerLauncher.launch(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error membuka galeri: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateImagePreview(uri: Uri) {
+        if (isEditMode) {
+            currentEditDialogBinding?.let { dialogBinding ->
+                Glide.with(this)
+                    .load(uri)
+                    .placeholder(R.drawable.ic_equipment_placeholder)
+                    .into(dialogBinding.ivEditPreview)
+            }
+        } else {
+            currentDialogBinding?.let { dialogBinding ->
+                Glide.with(this)
+                    .load(uri)
+                    .placeholder(R.drawable.ic_equipment_placeholder)
+                    .into(dialogBinding.ivPreview)
+                dialogBinding.ivPreview.visibility = View.VISIBLE
+                dialogBinding.btnSelectImage.text = "🔄 Ganti Foto"
+            }
         }
     }
 
@@ -274,7 +409,7 @@ class EquipmentManagementActivity : AppCompatActivity() {
         viewModel.updateResult.observe(this) { result ->
             result.onSuccess {
                 if (currentEquipmentId != null) {
-                    Toast.makeText(this, "✅ Foto berhasil diupdate", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "✅ Equipment berhasil diupdate", Toast.LENGTH_SHORT).show()
                     currentEquipmentId = null
                 } else {
                     Toast.makeText(this, "✅ Equipment berhasil diupdate", Toast.LENGTH_SHORT).show()
@@ -299,6 +434,7 @@ class EquipmentManagementActivity : AppCompatActivity() {
         val dialogBinding = DialogAddEquipmentBinding.inflate(layoutInflater)
         currentDialogBinding = dialogBinding
         selectedImageUri = null
+        isEditMode = false
 
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle("Tambah Alat Gym")
@@ -309,7 +445,6 @@ class EquipmentManagementActivity : AppCompatActivity() {
             }
             .create()
 
-        // Setup image picker button in dialog
         dialogBinding.btnSelectImage.setOnClickListener {
             pickImage()
         }
@@ -361,7 +496,6 @@ class EquipmentManagementActivity : AppCompatActivity() {
             try {
                 binding.progressBar.visibility = View.VISIBLE
 
-                // Upload image first if selected
                 var imageUrl = ""
                 selectedImageUri?.let { uri ->
                     Toast.makeText(this@EquipmentManagementActivity, "📤 Mengupload foto...", Toast.LENGTH_SHORT).show()
@@ -369,13 +503,11 @@ class EquipmentManagementActivity : AppCompatActivity() {
                     uploadResult.onSuccess { url ->
                         imageUrl = url
                         Toast.makeText(this@EquipmentManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
-                    }.onFailure { error ->
+                    }.onFailure {
                         Toast.makeText(this@EquipmentManagementActivity, "⚠️ Upload foto gagal, equipment akan disimpan tanpa foto", Toast.LENGTH_LONG).show()
-                        // Continue without image
                     }
                 }
 
-                // Create equipment object
                 val equipment = Equipment(
                     name = name,
                     description = description,

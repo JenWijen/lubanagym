@@ -30,6 +30,10 @@ class UserManagementViewModel : ViewModel() {
     private val _updateResult = MutableLiveData<Result<String>>()
     val updateResult: LiveData<Result<String>> = _updateResult
 
+    // NEW: Delete result LiveData
+    private val _deleteResult = MutableLiveData<Result<String>>()
+    val deleteResult: LiveData<Result<String>> = _deleteResult
+
     fun loadUsers() {
         viewModelScope.launch {
             try {
@@ -41,27 +45,74 @@ class UserManagementViewModel : ViewModel() {
         }
     }
 
+    // NEW: Delete user function
+    fun deleteUser(userId: String, userRole: String) {
+        viewModelScope.launch {
+            try {
+                // 1. Delete role-specific data first
+                val cleanupResult = cleanupUserRoleData(userId, userRole)
+
+                if (cleanupResult) {
+                    // 2. Delete user from users collection
+                    val deleteUserResult = userRepository.deleteUser(userId)
+
+                    deleteUserResult.onSuccess {
+                        _deleteResult.postValue(Result.success("✅ User berhasil dihapus dari sistem"))
+                    }.onFailure { error ->
+                        _deleteResult.postValue(Result.failure(Exception("Gagal menghapus user: ${error.message}")))
+                    }
+                } else {
+                    _deleteResult.postValue(Result.failure(Exception("Gagal membersihkan data role user")))
+                }
+
+            } catch (e: Exception) {
+                _deleteResult.postValue(Result.failure(e))
+            }
+        }
+    }
+
+    private suspend fun cleanupUserRoleData(userId: String, userRole: String): Boolean {
+        return try {
+            when (userRole) {
+                Constants.ROLE_MEMBER -> {
+                    val result = memberRepository.deleteMemberByUserId(userId)
+                    result.isSuccess
+                }
+                Constants.ROLE_STAFF -> {
+                    val result = staffRepository.deleteStaffByUserId(userId)
+                    result.isSuccess
+                }
+                Constants.ROLE_TRAINER -> {
+                    val result = trainerRepository.deleteTrainerByUserId(userId)
+                    result.isSuccess
+                }
+                Constants.ROLE_ADMIN -> {
+                    // Admin tidak punya collection terpisah
+                    true
+                }
+                else -> true // Unknown role, proceed
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun updateUserRole(userId: String, oldRole: String, newRole: String) {
         viewModelScope.launch {
             try {
-                // Skip if same role
                 if (oldRole == newRole) {
                     _updateResult.postValue(Result.success("ℹ️ Role sudah sama, tidak ada perubahan"))
                     return@launch
                 }
 
-                // 1. Update role di users collection
                 val updateResult = userRepository.updateUserRole(userId, newRole)
 
                 if (updateResult.isSuccess) {
-                    // 2. Get user data untuk assignment
                     val userResult = userRepository.getUserById(userId)
 
                     userResult.onSuccess { user ->
-                        // 3. Cleanup old role data FIRST
                         cleanupOldRoleData(userId, oldRole) { cleanupSuccess ->
                             if (cleanupSuccess) {
-                                // 4. Create new role profile
                                 when (newRole) {
                                     Constants.ROLE_MEMBER -> createMemberProfile(user, oldRole)
                                     Constants.ROLE_STAFF -> createStaffProfile(user, oldRole)
@@ -119,12 +170,11 @@ class UserManagementViewModel : ViewModel() {
                     }
 
                     Constants.ROLE_ADMIN -> {
-                        // Admin tidak punya collection terpisah
                         callback(true)
                     }
 
                     else -> {
-                        callback(true) // Unknown role, proceed
+                        callback(true)
                     }
                 }
             } catch (e: Exception) {
@@ -198,7 +248,7 @@ class UserManagementViewModel : ViewModel() {
                     name = user.username,
                     phone = "",
                     specialization = "General Fitness",
-                    experience = "Beginner", // String sesuai model
+                    experience = "Beginner",
                     bio = "Trainer baru dari sistem",
                     profileImageUrl = "",
                     isActive = true,

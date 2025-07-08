@@ -11,7 +11,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class StaffAdapter(
-    private val onStaffUpdate: (Staff, String, Any) -> Unit
+    private val onStaffUpdate: (Staff, String, Any) -> Unit,
+    private val onDeleteStaff: (Staff) -> Unit // NEW: Delete callback
 ) : ListAdapter<Staff, StaffAdapter.StaffViewHolder>(StaffDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StaffViewHolder {
@@ -44,6 +45,11 @@ class StaffAdapter(
                     if (isChecked != staff.isActive) {
                         onStaffUpdate(staff, "isActive", isChecked)
                     }
+                }
+
+                // NEW: Setup delete button
+                btnDeleteStaff.setOnClickListener {
+                    onDeleteStaff(staff)
                 }
             }
         }

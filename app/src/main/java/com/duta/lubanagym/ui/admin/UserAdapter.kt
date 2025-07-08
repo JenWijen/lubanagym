@@ -15,7 +15,8 @@ import com.duta.lubanagym.databinding.ItemUserBinding
 import com.duta.lubanagym.utils.Constants
 
 class UserAdapter(
-    private val onRoleChange: (User, String) -> Unit
+    private val onRoleChange: (User, String) -> Unit,
+    private val onDeleteUser: (User) -> Unit // NEW: Delete callback
 ) : ListAdapter<User, UserAdapter.UserViewHolder>(UserDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -45,13 +46,13 @@ class UserAdapter(
                 val roles = arrayOf(
                     Constants.ROLE_MEMBER,
                     Constants.ROLE_STAFF,
-                    Constants.ROLE_TRAINER, // NEW ROLE
+                    Constants.ROLE_TRAINER,
                     Constants.ROLE_ADMIN
                 )
                 val roleDisplayNames = arrayOf(
                     "👥 Member",
                     "👨‍💼 Staff",
-                    "🏋️ Trainer", // NEW DISPLAY
+                    "🏋️ Trainer",
                     "👨‍💻 Admin"
                 )
 
@@ -75,17 +76,21 @@ class UserAdapter(
                     }
                     override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
+
+                // NEW: Setup delete button
+                btnDeleteUser.setOnClickListener {
+                    onDeleteUser(user)
+                }
             }
         }
 
         private fun setupRoleBadge(role: String) {
             binding.tvRoleBadge.text = role.uppercase()
 
-            // Set background dan text color berdasarkan role
             val (backgroundRes, textColorRes) = when (role) {
                 Constants.ROLE_ADMIN -> Pair(R.drawable.role_badge_admin, R.color.white)
                 Constants.ROLE_STAFF -> Pair(R.drawable.role_badge_staff, R.color.white)
-                Constants.ROLE_TRAINER -> Pair(R.drawable.role_badge_trainer, R.color.white) // NEW
+                Constants.ROLE_TRAINER -> Pair(R.drawable.role_badge_trainer, R.color.white)
                 Constants.ROLE_MEMBER -> Pair(R.drawable.role_badge_member, R.color.white)
                 else -> Pair(R.drawable.role_badge_member, R.color.white)
             }

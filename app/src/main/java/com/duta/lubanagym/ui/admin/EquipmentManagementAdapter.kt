@@ -15,7 +15,9 @@ import com.duta.lubanagym.databinding.ItemEquipmentManagementBinding
 class EquipmentManagementAdapter(
     private val onEdit: (Equipment, String, Any) -> Unit,
     private val onDelete: (Equipment) -> Unit,
-    private val onUploadImage: (Equipment) -> Unit
+    private val onUploadImage: (Equipment) -> Unit,
+    private val onViewDetail: (Equipment) -> Unit, // NEW: Detail callback
+    private val onEditEquipment: (Equipment) -> Unit // NEW: Edit callback
 ) : ListAdapter<Equipment, EquipmentManagementAdapter.EquipmentViewHolder>(EquipmentDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EquipmentViewHolder {
@@ -57,6 +59,16 @@ class EquipmentManagementAdapter(
                     if (isChecked != equipment.isAvailable) {
                         onEdit(equipment, "isAvailable", isChecked)
                     }
+                }
+
+                // NEW: Setup detail button (card click)
+                root.setOnClickListener {
+                    onViewDetail(equipment)
+                }
+
+                // NEW: Setup edit button
+                btnEditEquipment.setOnClickListener { _: View ->
+                    onEditEquipment(equipment)
                 }
 
                 // Setup upload image button

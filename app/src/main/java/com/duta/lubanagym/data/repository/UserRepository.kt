@@ -39,6 +39,16 @@ class UserRepository(private val firebaseService: FirebaseService) {
         }
     }
 
+    // NEW: Delete user method
+    suspend fun deleteUser(userId: String): Result<Unit> {
+        return try {
+            firebaseService.deleteDocument(Constants.USERS_COLLECTION, userId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun updateUserRole(userId: String, newRole: String): Result<Unit> {
         return try {
             val updates = mapOf(
@@ -92,12 +102,14 @@ class UserRepository(private val firebaseService: FirebaseService) {
             val updates = profileUpdates.toMutableMap()
             updates["updatedAt"] = System.currentTimeMillis()
 
-            // Check if profile is complete - FIXED: Use proper Constants reference
+            // Check if profile is complete
             val requiredFields = Constants.getRequiredFields()
             val isComplete = requiredFields.all { field ->
                 updates[field]?.toString()?.isNotEmpty() == true ||
-                        // Check existing data if field not in updates
-                        (profileUpdates[field] == null && getUserFieldValue(userId, field).isNotEmpty())
+                        (profileUpdates[field] == null && getUserFieldValue(
+                            userId,
+                            field
+                        ).isNotEmpty())
             }
 
             if (isComplete) {
@@ -150,7 +162,8 @@ class UserRepository(private val firebaseService: FirebaseService) {
 
     suspend fun getUserByEmail(email: String): Result<User?> {
         return try {
-            val snapshot = firebaseService.getCollectionWhere(Constants.USERS_COLLECTION, "email", email)
+            val snapshot =
+                firebaseService.getCollectionWhere(Constants.USERS_COLLECTION, "email", email)
             if (snapshot.documents.isEmpty()) {
                 Result.success(null)
             } else {

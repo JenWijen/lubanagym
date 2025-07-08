@@ -15,7 +15,7 @@ import java.util.*
 class MemberAdapter(
     private val onMembershipChange: (Member, String) -> Unit,
     private val onStatusChange: (Member, Boolean) -> Unit,
-    private val onViewDetail: (Member) -> Unit // NEW: Detail view
+    private val onViewDetail: (Member) -> Unit
 ) : ListAdapter<Member, MemberAdapter.MemberViewHolder>(MemberDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberViewHolder {
@@ -59,7 +59,7 @@ class MemberAdapter(
                     }
                 }
 
-                // Setup membership type spinner - SIMPLIFIED
+                // Setup membership type spinner
                 val membershipTypes = arrayOf(
                     Constants.MEMBERSHIP_BASIC.uppercase(),
                     Constants.MEMBERSHIP_PREMIUM.uppercase(),

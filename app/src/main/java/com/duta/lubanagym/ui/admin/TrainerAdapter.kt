@@ -12,7 +12,8 @@ import com.duta.lubanagym.databinding.ItemTrainerBinding
 
 class TrainerAdapter(
     private val onEdit: (Trainer, String, Any) -> Unit,
-    private val onDelete: (Trainer) -> Unit
+    private val onDelete: (Trainer) -> Unit,
+    private val onEditTrainer: (Trainer) -> Unit // NEW: Edit trainer callback
 ) : ListAdapter<Trainer, TrainerAdapter.TrainerViewHolder>(TrainerDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrainerViewHolder {
@@ -54,6 +55,11 @@ class TrainerAdapter(
                     if (isChecked != trainer.isActive) {
                         onEdit(trainer, "isActive", isChecked)
                     }
+                }
+
+                // NEW: Setup edit button
+                btnEditTrainer.setOnClickListener {
+                    onEditTrainer(trainer)
                 }
 
                 // Setup delete button

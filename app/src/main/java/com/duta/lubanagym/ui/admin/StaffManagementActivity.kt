@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.duta.lubanagym.databinding.ActivityStaffManagementBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class StaffManagementActivity : AppCompatActivity() {
 
@@ -40,10 +41,15 @@ class StaffManagementActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        staffAdapter = StaffAdapter { staff, field, value ->
-            val updates = mapOf(field to value)
-            viewModel.updateStaff(staff.id, updates)
-        }
+        staffAdapter = StaffAdapter(
+            onStaffUpdate = { staff, field, value ->
+                val updates = mapOf(field to value)
+                viewModel.updateStaff(staff.id, updates)
+            },
+            onDeleteStaff = { staff -> // NEW: Delete callback
+                showDeleteStaffConfirmation(staff)
+            }
+        )
 
         binding.rvStaff.apply {
             adapter = staffAdapter
@@ -56,6 +62,10 @@ class StaffManagementActivity : AppCompatActivity() {
             result.onSuccess { staffList ->
                 staffAdapter.submitList(staffList)
                 binding.progressBar.visibility = View.GONE
+
+                if (staffList.isEmpty()) {
+                    Toast.makeText(this, "👨‍💼 Belum ada data staff", Toast.LENGTH_SHORT).show()
+                }
             }.onFailure { error ->
                 binding.progressBar.visibility = View.GONE
                 Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
@@ -64,12 +74,43 @@ class StaffManagementActivity : AppCompatActivity() {
 
         viewModel.updateResult.observe(this) { result ->
             result.onSuccess {
-                Toast.makeText(this, "Staff berhasil diupdate", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "✅ Staff berhasil diupdate", Toast.LENGTH_SHORT).show()
                 loadStaff()
             }.onFailure { error ->
-                Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
+
+        // NEW: Observer for delete result
+        viewModel.deleteResult.observe(this) { result ->
+            result.onSuccess {
+                Toast.makeText(this, "✅ Staff berhasil dihapus", Toast.LENGTH_SHORT).show()
+                loadStaff()
+            }.onFailure { error ->
+                Toast.makeText(this, "❌ Error menghapus: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // NEW: Show delete confirmation dialog
+    private fun showDeleteStaffConfirmation(staff: com.duta.lubanagym.data.model.Staff) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("🗑️ Konfirmasi Hapus Staff")
+            .setMessage("""
+                Apakah Anda yakin ingin menghapus staff ini?
+                
+                👨‍💼 Nama: ${staff.name}
+                📱 Telepon: ${staff.phone}
+                🏷️ Posisi: ${staff.position}
+                
+                ⚠️ Tindakan ini tidak dapat dibatalkan!
+            """.trimIndent())
+            .setPositiveButton("🗑️ Ya, Hapus") { _, _ ->
+                viewModel.deleteStaff(staff.id)
+            }
+            .setNegativeButton("❌ Batal", null)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show()
     }
 
     private fun loadStaff() {
