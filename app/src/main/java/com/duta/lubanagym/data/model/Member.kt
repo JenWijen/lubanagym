@@ -10,5 +10,14 @@ data class Member(
     val expiryDate: Long = 0,
     val isActive: Boolean = true,
     val profileImageUrl: String = "",
-    val qrCode: String = ""
+    val qrCode: String = "",
+
+    // Extended profile data from User
+    val address: String = "",
+    val emergencyContact: String = "",
+    val emergencyPhone: String = "",
+    val bloodType: String = "",
+    val allergies: String = "",
+    val dateOfBirth: String = "",
+    val gender: String = ""
 )

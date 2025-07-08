@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="membership_types">
+        <item>🥉 BASIC - Akses Gym Standar</item>
+        <item>🥈 PREMIUM - Gym + Konsultasi Trainer</item>
+        <item>🥇 VIP - All Access + Personal Trainer</item>
+    </string-array>
+
+    <string-array name="membership_types_simple">
         <item>BASIC</item>
         <item>PREMIUM</item>
         <item>VIP</item>
@@ -10,5 +16,39 @@
         <item>Pilih Gender</item>
         <item>Laki-laki</item>
         <item>Perempuan</item>
+    </string-array>
+
+    <string-array name="duration_options">
+        <item>1 Bulan</item>
+        <item>3 Bulan</item>
+        <item>6 Bulan</item>
+        <item>12 Bulan</item>
+    </string-array>
+
+    <string-array name="staff_positions">
+        <item>Receptionist</item>
+        <item>Cleaning Service</item>
+        <item>Maintenance</item>
+        <item>Security</item>
+        <item>Manager</item>
+    </string-array>
+
+    <string-array name="trainer_specializations">
+        <item>Weight Training</item>
+        <item>Cardio Training</item>
+        <item>Yoga</item>
+        <item>Pilates</item>
+        <item>Boxing</item>
+        <item>Functional Training</item>
+        <item>Nutrition Counseling</item>
+    </string-array>
+
+    <string-array name="equipment_categories">
+        <item>Cardio</item>
+        <item>Weight Training</item>
+        <item>Free Weights</item>
+        <item>Functional Training</item>
+        <item>Stretching</item>
+        <item>Other</item>
     </string-array>
 </resources>

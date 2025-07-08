@@ -1,5 +1,6 @@
 package com.duta.lubanagym.ui.main
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,6 +15,8 @@ import com.duta.lubanagym.ui.admin.AdminActivity
 import com.duta.lubanagym.ui.auth.LoginActivity
 import com.duta.lubanagym.utils.Constants
 import com.duta.lubanagym.utils.PreferenceHelper
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ProfileFragment : Fragment() {
 
@@ -23,6 +26,10 @@ class ProfileFragment : Fragment() {
     private lateinit var preferenceHelper: PreferenceHelper
     private var currentUser: User? = null
     private var isEditMode = false
+
+    // Date picker variables
+    private var selectedDateCalendar = Calendar.getInstance()
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -112,7 +119,6 @@ class ProfileFragment : Fragment() {
         // Cancel edit button
         binding.btnCancelEdit.setOnClickListener {
             toggleEditMode(false)
-            // Reset to original data - FIXED: Handle nullable User
             currentUser?.let { user ->
                 displayUserProfile(user)
             }
@@ -122,12 +128,86 @@ class ProfileFragment : Fragment() {
         binding.btnLogout.setOnClickListener {
             logout()
         }
+
+        // NEW: Date picker for date of birth
+        binding.etDateOfBirth.setOnClickListener {
+            showDatePickerDialog()
+        }
+
+        // Make the EditText non-focusable to prevent keyboard
+        binding.etDateOfBirth.isFocusable = false
+        binding.etDateOfBirth.isClickable = true
+    }
+
+    private fun showDatePickerDialog() {
+        // Parse current date if exists
+        val currentDateText = binding.etDateOfBirth.text.toString()
+        if (currentDateText.isNotEmpty() && isValidDate(currentDateText)) {
+            try {
+                val currentDate = dateFormat.parse(currentDateText)
+                currentDate?.let {
+                    selectedDateCalendar.time = it
+                }
+            } catch (e: Exception) {
+                // Use default date if parsing fails
+                selectedDateCalendar = Calendar.getInstance()
+                selectedDateCalendar.set(1990, 0, 1) // Default to 1990-01-01
+            }
+        } else {
+            // Set default date to 1990-01-01
+            selectedDateCalendar = Calendar.getInstance()
+            selectedDateCalendar.set(1990, 0, 1)
+        }
+
+        val datePickerDialog = DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                // Update calendar with selected date
+                selectedDateCalendar.set(year, month, dayOfMonth)
+
+                // Format and set the date
+                val formattedDate = dateFormat.format(selectedDateCalendar.time)
+                binding.etDateOfBirth.setText(formattedDate)
+
+                // Show confirmation toast
+                Toast.makeText(requireContext(), "📅 Tanggal lahir: $formattedDate", Toast.LENGTH_SHORT).show()
+            },
+            selectedDateCalendar.get(Calendar.YEAR),
+            selectedDateCalendar.get(Calendar.MONTH),
+            selectedDateCalendar.get(Calendar.DAY_OF_MONTH)
+        )
+
+        // Set date picker constraints
+        datePickerDialog.datePicker.apply {
+            // Set maximum date to today (can't be born in the future)
+            maxDate = System.currentTimeMillis()
+
+            // Set minimum date to 100 years ago
+            val minCalendar = Calendar.getInstance()
+            minCalendar.add(Calendar.YEAR, -100)
+            minDate = minCalendar.timeInMillis
+        }
+
+        // Customize dialog
+        datePickerDialog.setTitle("📅 Pilih Tanggal Lahir")
+        datePickerDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "✅ Pilih", datePickerDialog)
+        datePickerDialog.setButton(DatePickerDialog.BUTTON_NEGATIVE, "❌ Batal", datePickerDialog)
+
+        datePickerDialog.show()
+    }
+
+    private fun isValidDate(dateString: String): Boolean {
+        return try {
+            dateFormat.parse(dateString)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun observeViewModel() {
         viewModel.userProfile.observe(viewLifecycleOwner) { result ->
             result.onSuccess { user ->
-                // FIXED: Proper null handling
                 if (user != null) {
                     currentUser = user
                     displayUserProfile(user)
@@ -167,7 +247,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // FIXED: Non-nullable parameter
     private fun displayUserProfile(user: User) {
         binding.apply {
             // Display mode
@@ -210,7 +289,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // NEW METHOD: Handle profile not found
     private fun showProfileNotFound() {
         binding.apply {
             tvUserName.text = "Profil Tidak Ditemukan"
@@ -228,6 +306,9 @@ class ProfileFragment : Fragment() {
             if (editMode) {
                 layoutLoggedIn.visibility = View.GONE
                 layoutEditProfile.visibility = View.VISIBLE
+
+                // Show date picker hint
+                Toast.makeText(requireContext(), "💡 Tap pada tanggal lahir untuk membuka date picker", Toast.LENGTH_LONG).show()
             } else {
                 layoutLoggedIn.visibility = View.VISIBLE
                 layoutEditProfile.visibility = View.GONE
@@ -262,6 +343,13 @@ class ProfileFragment : Fragment() {
         }
         if (phone.length < 10) {
             binding.etPhone.error = "No. telepon minimal 10 digit"
+            return
+        }
+
+        // Validate date format if filled
+        if (dateOfBirth.isNotEmpty() && !isValidDate(dateOfBirth)) {
+            binding.etDateOfBirth.error = "Format tanggal tidak valid. Gunakan date picker."
+            Toast.makeText(requireContext(), "❌ Gunakan date picker untuk memilih tanggal lahir", Toast.LENGTH_SHORT).show()
             return
         }
 

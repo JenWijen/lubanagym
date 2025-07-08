@@ -30,7 +30,6 @@ class UserManagementViewModel : ViewModel() {
     private val _updateResult = MutableLiveData<Result<String>>()
     val updateResult: LiveData<Result<String>> = _updateResult
 
-    // NEW: Delete result LiveData
     private val _deleteResult = MutableLiveData<Result<String>>()
     val deleteResult: LiveData<Result<String>> = _deleteResult
 
@@ -45,15 +44,12 @@ class UserManagementViewModel : ViewModel() {
         }
     }
 
-    // NEW: Delete user function
     fun deleteUser(userId: String, userRole: String) {
         viewModelScope.launch {
             try {
-                // 1. Delete role-specific data first
                 val cleanupResult = cleanupUserRoleData(userId, userRole)
 
                 if (cleanupResult) {
-                    // 2. Delete user from users collection
                     val deleteUserResult = userRepository.deleteUser(userId)
 
                     deleteUserResult.onSuccess {
@@ -86,11 +82,8 @@ class UserManagementViewModel : ViewModel() {
                     val result = trainerRepository.deleteTrainerByUserId(userId)
                     result.isSuccess
                 }
-                Constants.ROLE_ADMIN -> {
-                    // Admin tidak punya collection terpisah
-                    true
-                }
-                else -> true // Unknown role, proceed
+                Constants.ROLE_ADMIN -> true
+                else -> true
             }
         } catch (e: Exception) {
             false
@@ -114,9 +107,9 @@ class UserManagementViewModel : ViewModel() {
                         cleanupOldRoleData(userId, oldRole) { cleanupSuccess ->
                             if (cleanupSuccess) {
                                 when (newRole) {
-                                    Constants.ROLE_MEMBER -> createMemberProfile(user, oldRole)
-                                    Constants.ROLE_STAFF -> createStaffProfile(user, oldRole)
-                                    Constants.ROLE_TRAINER -> createTrainerProfile(user, oldRole)
+                                    Constants.ROLE_MEMBER -> createMemberProfileWithUserData(user, oldRole)
+                                    Constants.ROLE_STAFF -> createStaffProfileWithUserData(user, oldRole)
+                                    Constants.ROLE_TRAINER -> createTrainerProfileWithUserData(user, oldRole)
                                     Constants.ROLE_ADMIN -> {
                                         val cleanupMsg = if (oldRole != Constants.ROLE_ADMIN) {
                                             " & data $oldRole dihapus"
@@ -132,7 +125,7 @@ class UserManagementViewModel : ViewModel() {
                         _updateResult.postValue(Result.failure(error))
                     }
                 } else {
-                    _updateResult.postValue(updateResult.map { "✅ Role berhasil diupdate" })
+                    _updateResult.postValue(Result.success("✅ Role berhasil diupdate"))
                 }
 
             } catch (e: Exception) {
@@ -183,25 +176,25 @@ class UserManagementViewModel : ViewModel() {
         }
     }
 
-    private fun createMemberProfile(user: User, oldRole: String) {
+    private fun createMemberProfileWithUserData(user: User, oldRole: String) {
         viewModelScope.launch {
             try {
                 val newMember = Member(
                     id = "",
                     userId = user.id,
-                    name = user.username,
-                    phone = "",
+                    name = if (user.fullName.isNotEmpty()) user.fullName else user.username,
+                    phone = user.phone,
                     membershipType = Constants.MEMBERSHIP_BASIC,
                     joinDate = System.currentTimeMillis(),
                     expiryDate = System.currentTimeMillis() + (365L * 24 * 60 * 60 * 1000),
                     isActive = true,
-                    profileImageUrl = "",
+                    profileImageUrl = user.profileImageUrl,
                     qrCode = generateQRCode(user.id)
                 )
 
                 memberRepository.createMember(newMember).onSuccess {
                     val cleanupMsg = if (oldRole != Constants.ROLE_MEMBER) " & data $oldRole dihapus" else ""
-                    _updateResult.postValue(Result.success("✅ Role diupdate ke Member, profil member dibuat$cleanupMsg"))
+                    _updateResult.postValue(Result.success("✅ Role diupdate ke Member, profil member dibuat dengan data lengkap$cleanupMsg"))
                 }.onFailure { error ->
                     _updateResult.postValue(Result.failure(Exception("Role diupdate tapi gagal membuat profil member: ${error.message}")))
                 }
@@ -211,25 +204,25 @@ class UserManagementViewModel : ViewModel() {
         }
     }
 
-    private fun createStaffProfile(user: User, oldRole: String) {
+    private fun createStaffProfileWithUserData(user: User, oldRole: String) {
         viewModelScope.launch {
             try {
                 val newStaff = Staff(
                     id = "",
                     userId = user.id,
-                    name = user.username,
-                    phone = "",
+                    name = if (user.fullName.isNotEmpty()) user.fullName else user.username,
+                    phone = user.phone,
                     position = "Staff",
                     joinDate = System.currentTimeMillis(),
                     isActive = true,
-                    profileImageUrl = "",
+                    profileImageUrl = user.profileImageUrl,
                     createdAt = System.currentTimeMillis(),
                     updatedAt = System.currentTimeMillis()
                 )
 
                 staffRepository.createStaff(newStaff).onSuccess {
                     val cleanupMsg = if (oldRole != Constants.ROLE_STAFF) " & data $oldRole dihapus" else ""
-                    _updateResult.postValue(Result.success("✅ Role diupdate ke Staff, profil staff dibuat$cleanupMsg"))
+                    _updateResult.postValue(Result.success("✅ Role diupdate ke Staff, profil staff dibuat dengan data lengkap$cleanupMsg"))
                 }.onFailure { error ->
                     _updateResult.postValue(Result.failure(Exception("Role diupdate tapi gagal membuat profil staff: ${error.message}")))
                 }
@@ -239,25 +232,25 @@ class UserManagementViewModel : ViewModel() {
         }
     }
 
-    private fun createTrainerProfile(user: User, oldRole: String) {
+    private fun createTrainerProfileWithUserData(user: User, oldRole: String) {
         viewModelScope.launch {
             try {
                 val newTrainer = Trainer(
                     id = "",
                     userId = user.id,
-                    name = user.username,
-                    phone = "",
+                    name = if (user.fullName.isNotEmpty()) user.fullName else user.username,
+                    phone = user.phone,
                     specialization = "General Fitness",
                     experience = "Beginner",
-                    bio = "Trainer baru dari sistem",
-                    profileImageUrl = "",
+                    bio = "Trainer baru dari sistem dengan data profil lengkap",
+                    profileImageUrl = user.profileImageUrl,
                     isActive = true,
                     createdAt = System.currentTimeMillis()
                 )
 
                 trainerRepository.createTrainer(newTrainer).onSuccess {
                     val cleanupMsg = if (oldRole != Constants.ROLE_TRAINER) " & data $oldRole dihapus" else ""
-                    _updateResult.postValue(Result.success("✅ Role diupdate ke Trainer, profil trainer dibuat$cleanupMsg"))
+                    _updateResult.postValue(Result.success("✅ Role diupdate ke Trainer, profil trainer dibuat dengan data lengkap$cleanupMsg"))
                 }.onFailure { error ->
                     _updateResult.postValue(Result.failure(Exception("Role diupdate tapi gagal membuat profil trainer: ${error.message}")))
                 }

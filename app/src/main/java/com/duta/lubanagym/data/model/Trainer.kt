@@ -10,5 +10,14 @@ data class Trainer(
     val bio: String = "",
     val profileImageUrl: String = "",
     val isActive: Boolean = true,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+
+    // Extended profile data from User
+    val address: String = "",
+    val emergencyContact: String = "",
+    val emergencyPhone: String = "",
+    val dateOfBirth: String = "",
+    val gender: String = "",
+    val bloodType: String = "",
+    val allergies: String = ""
 )

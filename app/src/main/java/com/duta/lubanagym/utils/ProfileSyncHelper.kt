@@ -16,7 +16,6 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
     private val trainerRepository = TrainerRepository(firebaseService)
 
     fun syncUserProfileUpdate(user: User) {
-        // Use coroutine scope for async operations
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 when (user.role) {
@@ -26,7 +25,6 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
                     // Admin tidak perlu sync collection terpisah
                 }
             } catch (e: Exception) {
-                // Log error but don't fail the main update
                 println("Profile sync error: ${e.message}")
             }
         }
@@ -36,7 +34,7 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
         memberRepository.getMemberByUserId(user.id).onSuccess { member ->
             member?.let {
                 val updates = mapOf(
-                    "name" to (user.fullName.ifEmpty { user.username }),
+                    "name" to getDisplayName(user),
                     "phone" to user.phone,
                     "profileImageUrl" to user.profileImageUrl
                 )
@@ -49,7 +47,7 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
         staffRepository.getStaffByUserId(user.id).onSuccess { staff ->
             staff?.let {
                 val updates = mapOf(
-                    "name" to (user.fullName.ifEmpty { user.username }),
+                    "name" to getDisplayName(user),
                     "phone" to user.phone,
                     "profileImageUrl" to user.profileImageUrl,
                     "updatedAt" to System.currentTimeMillis()
@@ -63,12 +61,173 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
         trainerRepository.getTrainerByUserId(user.id).onSuccess { trainer ->
             trainer?.let {
                 val updates = mapOf(
-                    "name" to (user.fullName.ifEmpty { user.username }),
+                    "name" to getDisplayName(user),
                     "phone" to user.phone,
                     "profileImageUrl" to user.profileImageUrl
                 )
                 trainerRepository.updateTrainer(it.id, updates)
             }
+        }
+    }
+
+    // NEW: Enhanced sync with full profile data
+    fun syncFullUserProfile(user: User) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                when (user.role) {
+                    Constants.ROLE_MEMBER -> syncFullMemberProfile(user)
+                    Constants.ROLE_STAFF -> syncFullStaffProfile(user)
+                    Constants.ROLE_TRAINER -> syncFullTrainerProfile(user)
+                }
+            } catch (e: Exception) {
+                println("Full profile sync error: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun syncFullMemberProfile(user: User) {
+        memberRepository.getMemberByUserId(user.id).onSuccess { member ->
+            member?.let {
+                val updates = mutableMapOf<String, Any>(
+                    "name" to getDisplayName(user),
+                    "phone" to user.phone,
+                    "profileImageUrl" to user.profileImageUrl
+                )
+
+                // Add extended profile data as metadata
+                if (user.address.isNotEmpty()) {
+                    updates["address"] = user.address
+                }
+                if (user.emergencyContact.isNotEmpty()) {
+                    updates["emergencyContact"] = user.emergencyContact
+                }
+                if (user.emergencyPhone.isNotEmpty()) {
+                    updates["emergencyPhone"] = user.emergencyPhone
+                }
+                if (user.bloodType.isNotEmpty()) {
+                    updates["bloodType"] = user.bloodType
+                }
+                if (user.allergies.isNotEmpty()) {
+                    updates["allergies"] = user.allergies
+                }
+                if (user.dateOfBirth.isNotEmpty()) {
+                    updates["dateOfBirth"] = user.dateOfBirth
+                }
+                if (user.gender.isNotEmpty()) {
+                    updates["gender"] = user.gender
+                }
+
+                memberRepository.updateMember(it.id, updates)
+            }
+        }
+    }
+
+    private suspend fun syncFullStaffProfile(user: User) {
+        staffRepository.getStaffByUserId(user.id).onSuccess { staff ->
+            staff?.let {
+                val updates = mutableMapOf<String, Any>(
+                    "name" to getDisplayName(user),
+                    "phone" to user.phone,
+                    "profileImageUrl" to user.profileImageUrl,
+                    "updatedAt" to System.currentTimeMillis()
+                )
+
+                // Add extended profile data
+                if (user.address.isNotEmpty()) {
+                    updates["address"] = user.address
+                }
+                if (user.emergencyContact.isNotEmpty()) {
+                    updates["emergencyContact"] = user.emergencyContact
+                }
+                if (user.emergencyPhone.isNotEmpty()) {
+                    updates["emergencyPhone"] = user.emergencyPhone
+                }
+                if (user.dateOfBirth.isNotEmpty()) {
+                    updates["dateOfBirth"] = user.dateOfBirth
+                }
+                if (user.gender.isNotEmpty()) {
+                    updates["gender"] = user.gender
+                }
+
+                staffRepository.updateStaff(it.id, updates)
+            }
+        }
+    }
+
+    private suspend fun syncFullTrainerProfile(user: User) {
+        trainerRepository.getTrainerByUserId(user.id).onSuccess { trainer ->
+            trainer?.let {
+                val updates = mutableMapOf<String, Any>(
+                    "name" to getDisplayName(user),
+                    "phone" to user.phone,
+                    "profileImageUrl" to user.profileImageUrl
+                )
+
+                // Add extended profile data
+                if (user.address.isNotEmpty()) {
+                    updates["address"] = user.address
+                }
+                if (user.emergencyContact.isNotEmpty()) {
+                    updates["emergencyContact"] = user.emergencyContact
+                }
+                if (user.emergencyPhone.isNotEmpty()) {
+                    updates["emergencyPhone"] = user.emergencyPhone
+                }
+                if (user.dateOfBirth.isNotEmpty()) {
+                    updates["dateOfBirth"] = user.dateOfBirth
+                }
+                if (user.gender.isNotEmpty()) {
+                    updates["gender"] = user.gender
+                }
+                if (user.bloodType.isNotEmpty()) {
+                    updates["bloodType"] = user.bloodType
+                }
+                if (user.allergies.isNotEmpty()) {
+                    updates["allergies"] = user.allergies
+                }
+
+                trainerRepository.updateTrainer(it.id, updates)
+            }
+        }
+    }
+
+    private fun getDisplayName(user: User): String {
+        return if (user.fullName.isNotEmpty()) user.fullName else user.username
+    }
+
+    // NEW: Method to sync when user profile is updated
+    suspend fun onUserProfileUpdated(userId: String): Result<Unit> {
+        return try {
+            // Get latest user data
+            val userDoc = firebaseService.getDocument(Constants.USERS_COLLECTION, userId)
+            if (userDoc.exists()) {
+                val user = User(
+                    id = userDoc.id,
+                    email = userDoc.getString("email") ?: "",
+                    username = userDoc.getString("username") ?: "",
+                    role = userDoc.getString("role") ?: Constants.ROLE_MEMBER,
+                    createdAt = userDoc.getLong("createdAt") ?: 0L,
+                    fullName = userDoc.getString("fullName") ?: "",
+                    phone = userDoc.getString("phone") ?: "",
+                    dateOfBirth = userDoc.getString("dateOfBirth") ?: "",
+                    gender = userDoc.getString("gender") ?: "",
+                    address = userDoc.getString("address") ?: "",
+                    profileImageUrl = userDoc.getString("profileImageUrl") ?: "",
+                    emergencyContact = userDoc.getString("emergencyContact") ?: "",
+                    emergencyPhone = userDoc.getString("emergencyPhone") ?: "",
+                    bloodType = userDoc.getString("bloodType") ?: "",
+                    allergies = userDoc.getString("allergies") ?: "",
+                    isProfileComplete = userDoc.getBoolean("isProfileComplete") ?: false,
+                    updatedAt = userDoc.getLong("updatedAt") ?: 0L
+                )
+
+                syncFullUserProfile(user)
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("User not found"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

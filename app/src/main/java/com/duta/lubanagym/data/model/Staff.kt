@@ -10,5 +10,12 @@ data class Staff(
     val isActive: Boolean = true,
     val profileImageUrl: String = "",
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    // Extended profile data from User
+    val address: String = "",
+    val emergencyContact: String = "",
+    val emergencyPhone: String = "",
+    val dateOfBirth: String = "",
+    val gender: String = ""
 )

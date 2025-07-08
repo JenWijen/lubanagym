@@ -5,27 +5,79 @@
     android:orientation="vertical"
     android:background="@color/background_color">
 
-    <TextView
+    <!-- Header Section -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Peralatan Gym"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@color/text_primary"
+        android:background="@color/primary_color"
         android:padding="16dp"
-        android:background="@color/white"
-        android:elevation="2dp" />
+        android:elevation="4dp">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🏋️‍♂️ Peralatan Gym"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- Content Section -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- RecyclerView for Equipment List -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvEquipment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:clipToPadding="false" />
 
+        <!-- Empty State -->
+        <LinearLayout
+            android:id="@+id/layoutEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🏋️‍♂️"
+                android:textSize="64sp"
+                android:layout_marginBottom="16dp"
+                android:alpha="0.6" />
+
+            <TextView
+                android:id="@+id/tvEmptyState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Belum ada equipment tersedia"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:textColor="@color/text_secondary"
+                android:lineSpacingExtra="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Silakan coba lagi nanti atau hubungi staff gym untuk informasi lebih lanjut"
+                android:textAlignment="center"
+                android:textSize="14sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="2dp" />
+
+        </LinearLayout>
+
+        <!-- Progress Bar -->
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"

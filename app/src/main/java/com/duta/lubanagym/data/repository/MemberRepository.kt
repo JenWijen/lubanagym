@@ -1,10 +1,9 @@
+// Updated MemberRepository.kt
 package com.duta.lubanagym.data.repository
 
 import com.duta.lubanagym.data.firebase.FirebaseService
 import com.duta.lubanagym.data.model.Member
 import com.duta.lubanagym.utils.Constants
-import com.google.firebase.firestore.Query
-import kotlinx.coroutines.tasks.await
 
 class MemberRepository(private val firebaseService: FirebaseService) {
 
@@ -19,7 +18,16 @@ class MemberRepository(private val firebaseService: FirebaseService) {
                 "expiryDate" to member.expiryDate,
                 "isActive" to member.isActive,
                 "profileImageUrl" to member.profileImageUrl,
-                "qrCode" to member.qrCode
+                "qrCode" to member.qrCode,
+
+                // Extended profile data
+                "address" to member.address,
+                "emergencyContact" to member.emergencyContact,
+                "emergencyPhone" to member.emergencyPhone,
+                "bloodType" to member.bloodType,
+                "allergies" to member.allergies,
+                "dateOfBirth" to member.dateOfBirth,
+                "gender" to member.gender
             )
 
             val docRef = firebaseService.addDocument(Constants.MEMBERS_COLLECTION, memberMap)
@@ -43,7 +51,16 @@ class MemberRepository(private val firebaseService: FirebaseService) {
                     expiryDate = doc.getLong("expiryDate") ?: 0L,
                     isActive = doc.getBoolean("isActive") ?: true,
                     profileImageUrl = doc.getString("profileImageUrl") ?: "",
-                    qrCode = doc.getString("qrCode") ?: ""
+                    qrCode = doc.getString("qrCode") ?: "",
+
+                    // Extended profile data
+                    address = doc.getString("address") ?: "",
+                    emergencyContact = doc.getString("emergencyContact") ?: "",
+                    emergencyPhone = doc.getString("emergencyPhone") ?: "",
+                    bloodType = doc.getString("bloodType") ?: "",
+                    allergies = doc.getString("allergies") ?: "",
+                    dateOfBirth = doc.getString("dateOfBirth") ?: "",
+                    gender = doc.getString("gender") ?: ""
                 )
             }
             Result.success(members)
@@ -69,7 +86,16 @@ class MemberRepository(private val firebaseService: FirebaseService) {
                     expiryDate = doc.getLong("expiryDate") ?: 0L,
                     isActive = doc.getBoolean("isActive") ?: true,
                     profileImageUrl = doc.getString("profileImageUrl") ?: "",
-                    qrCode = doc.getString("qrCode") ?: ""
+                    qrCode = doc.getString("qrCode") ?: "",
+
+                    // Extended profile data
+                    address = doc.getString("address") ?: "",
+                    emergencyContact = doc.getString("emergencyContact") ?: "",
+                    emergencyPhone = doc.getString("emergencyPhone") ?: "",
+                    bloodType = doc.getString("bloodType") ?: "",
+                    allergies = doc.getString("allergies") ?: "",
+                    dateOfBirth = doc.getString("dateOfBirth") ?: "",
+                    gender = doc.getString("gender") ?: ""
                 )
                 Result.success(member)
             }
@@ -96,7 +122,6 @@ class MemberRepository(private val firebaseService: FirebaseService) {
         }
     }
 
-    // NEW METHOD - Delete member by userId (untuk cleanup role change)
     suspend fun deleteMemberByUserId(userId: String): Result<Unit> {
         return try {
             val memberResult = getMemberByUserId(userId)
@@ -104,7 +129,7 @@ class MemberRepository(private val firebaseService: FirebaseService) {
                 if (member != null) {
                     return deleteMember(member.id)
                 } else {
-                    return Result.success(Unit) // No member to delete
+                    return Result.success(Unit)
                 }
             }.onFailure { error ->
                 return Result.failure(error)
@@ -129,7 +154,16 @@ class MemberRepository(private val firebaseService: FirebaseService) {
                     expiryDate = doc.getLong("expiryDate") ?: 0L,
                     isActive = doc.getBoolean("isActive") ?: true,
                     profileImageUrl = doc.getString("profileImageUrl") ?: "",
-                    qrCode = doc.getString("qrCode") ?: ""
+                    qrCode = doc.getString("qrCode") ?: "",
+
+                    // Extended profile data
+                    address = doc.getString("address") ?: "",
+                    emergencyContact = doc.getString("emergencyContact") ?: "",
+                    emergencyPhone = doc.getString("emergencyPhone") ?: "",
+                    bloodType = doc.getString("bloodType") ?: "",
+                    allergies = doc.getString("allergies") ?: "",
+                    dateOfBirth = doc.getString("dateOfBirth") ?: "",
+                    gender = doc.getString("gender") ?: ""
                 )
                 Result.success(member)
             } else {
