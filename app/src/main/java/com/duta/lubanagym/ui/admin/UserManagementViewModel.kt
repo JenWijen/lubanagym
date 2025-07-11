@@ -108,12 +108,19 @@ class UserManagementViewModel : ViewModel() {
                             if (cleanupSuccess) {
                                 when (newRole) {
                                     Constants.ROLE_MEMBER -> createMemberProfileWithUserData(user, oldRole)
+                                    Constants.ROLE_STAFF -> createStaffProfileWithUserData(user, oldRole)  // ADD BACK
                                     Constants.ROLE_TRAINER -> createTrainerProfileWithUserData(user, oldRole)
                                     Constants.ROLE_ADMIN -> {
                                         val cleanupMsg = if (oldRole != Constants.ROLE_ADMIN) {
                                             " & data $oldRole dihapus"
                                         } else ""
                                         _updateResult.postValue(Result.success("✅ Role berhasil diupdate ke Admin$cleanupMsg"))
+                                    }
+                                    Constants.ROLE_GUEST -> {
+                                        val cleanupMsg = if (oldRole != Constants.ROLE_GUEST) {
+                                            " & data $oldRole dihapus"
+                                        } else ""
+                                        _updateResult.postValue(Result.success("✅ Role berhasil diupdate ke Guest$cleanupMsg"))
                                     }
                                 }
                             } else {
