@@ -1,19 +1,30 @@
 package com.duta.lubanagym.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.duta.lubanagym.R
 import com.duta.lubanagym.databinding.ActivityMainBinding
+import com.duta.lubanagym.ui.admin.AdminActivity
+import com.duta.lubanagym.utils.Constants
+import com.duta.lubanagym.utils.PreferenceHelper
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
+    private lateinit var preferenceHelper: PreferenceHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        preferenceHelper = PreferenceHelper(this)
+
+        // CHECK ADMIN ACCESS - REDIRECT JIKA ADMIN
+        checkAdminAccess()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -23,6 +34,27 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             loadFragment(HomeFragment())
         }
+    }
+
+    private fun checkAdminAccess() {
+        val isLoggedIn = preferenceHelper.getBoolean(Constants.PREF_IS_LOGGED_IN)
+        val userRole = preferenceHelper.getString(Constants.PREF_USER_ROLE)
+
+        // UPDATE: Redirect both admin and staff
+        if (isLoggedIn && (userRole == Constants.ROLE_ADMIN || userRole == Constants.ROLE_STAFF)) {
+            // Admin & Staff tidak boleh mengakses MainActivity, redirect ke AdminActivity
+            val intent = Intent(this, AdminActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+            return
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Check lagi saat resume untuk memastikan admin tidak bisa bypass
+        checkAdminAccess()
     }
 
     private fun setupBottomNavigation() {

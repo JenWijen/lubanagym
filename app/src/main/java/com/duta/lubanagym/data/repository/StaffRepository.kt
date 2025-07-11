@@ -18,7 +18,14 @@ class StaffRepository(private val firebaseService: FirebaseService) {
                 "isActive" to staff.isActive,
                 "profileImageUrl" to staff.profileImageUrl,
                 "createdAt" to staff.createdAt,
-                "updatedAt" to staff.updatedAt
+                "updatedAt" to staff.updatedAt,
+
+                // Extended profile data
+                "address" to staff.address,
+                "emergencyContact" to staff.emergencyContact,
+                "emergencyPhone" to staff.emergencyPhone,
+                "dateOfBirth" to staff.dateOfBirth,
+                "gender" to staff.gender
             )
 
             val docRef = firebaseService.addDocument(Constants.STAFF_COLLECTION, staffMap)
@@ -42,7 +49,14 @@ class StaffRepository(private val firebaseService: FirebaseService) {
                     isActive = doc.getBoolean("isActive") ?: true,
                     profileImageUrl = doc.getString("profileImageUrl") ?: "",
                     createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
-                    updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
+                    updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
+
+                    // Extended profile data
+                    address = doc.getString("address") ?: "",
+                    emergencyContact = doc.getString("emergencyContact") ?: "",
+                    emergencyPhone = doc.getString("emergencyPhone") ?: "",
+                    dateOfBirth = doc.getString("dateOfBirth") ?: "",
+                    gender = doc.getString("gender") ?: ""
                 )
             }
             Result.success(staff)
@@ -68,7 +82,14 @@ class StaffRepository(private val firebaseService: FirebaseService) {
                     isActive = doc.getBoolean("isActive") ?: true,
                     profileImageUrl = doc.getString("profileImageUrl") ?: "",
                     createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
-                    updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
+                    updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
+
+                    // Extended profile data
+                    address = doc.getString("address") ?: "",
+                    emergencyContact = doc.getString("emergencyContact") ?: "",
+                    emergencyPhone = doc.getString("emergencyPhone") ?: "",
+                    dateOfBirth = doc.getString("dateOfBirth") ?: "",
+                    gender = doc.getString("gender") ?: ""
                 )
                 Result.success(staff)
             }
@@ -98,7 +119,6 @@ class StaffRepository(private val firebaseService: FirebaseService) {
         }
     }
 
-    // NEW METHOD - Delete staff by userId (untuk cleanup role change)
     suspend fun deleteStaffByUserId(userId: String): Result<Unit> {
         return try {
             val staffResult = getStaffByUserId(userId)
@@ -106,7 +126,7 @@ class StaffRepository(private val firebaseService: FirebaseService) {
                 if (staff != null) {
                     return deleteStaff(staff.id)
                 } else {
-                    return Result.success(Unit) // No staff to delete
+                    return Result.success(Unit)
                 }
             }.onFailure { error ->
                 return Result.failure(error)
@@ -131,7 +151,14 @@ class StaffRepository(private val firebaseService: FirebaseService) {
                     isActive = doc.getBoolean("isActive") ?: true,
                     profileImageUrl = doc.getString("profileImageUrl") ?: "",
                     createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
-                    updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
+                    updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis(),
+
+                    // Extended profile data
+                    address = doc.getString("address") ?: "",
+                    emergencyContact = doc.getString("emergencyContact") ?: "",
+                    emergencyPhone = doc.getString("emergencyPhone") ?: "",
+                    dateOfBirth = doc.getString("dateOfBirth") ?: "",
+                    gender = doc.getString("gender") ?: ""
                 )
                 Result.success(staff)
             } else {

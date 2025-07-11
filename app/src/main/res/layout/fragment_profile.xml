@@ -131,7 +131,7 @@
                         android:id="@+id/tvMembershipType"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="PREMIUM"
+                        android:text="Guest"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textColor="@color/white"

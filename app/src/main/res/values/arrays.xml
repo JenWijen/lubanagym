@@ -25,14 +25,6 @@
         <item>12 Bulan</item>
     </string-array>
 
-    <string-array name="staff_positions">
-        <item>Receptionist</item>
-        <item>Cleaning Service</item>
-        <item>Maintenance</item>
-        <item>Security</item>
-        <item>Manager</item>
-    </string-array>
-
     <string-array name="trainer_specializations">
         <item>Weight Training</item>
         <item>Cardio Training</item>
@@ -50,5 +42,15 @@
         <item>Functional Training</item>
         <item>Stretching</item>
         <item>Other</item>
+    </string-array>
+
+    <string-array name="staff_positions">
+        <item>Receptionist</item>
+        <item>Cleaning Service</item>
+        <item>Maintenance</item>
+        <item>Security</item>
+        <item>Manager</item>
+        <item>Assistant</item>
+        <item>Supervisor</item>
     </string-array>
 </resources>

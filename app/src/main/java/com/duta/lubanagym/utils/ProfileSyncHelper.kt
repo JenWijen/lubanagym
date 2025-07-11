@@ -20,9 +20,9 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
             try {
                 when (user.role) {
                     Constants.ROLE_MEMBER -> syncMemberProfile(user)
-                    Constants.ROLE_STAFF -> syncStaffProfile(user)
+                    Constants.ROLE_STAFF -> syncStaffProfile(user)      // ADD BACK: Staff sync
                     Constants.ROLE_TRAINER -> syncTrainerProfile(user)
-                    // Admin tidak perlu sync collection terpisah
+                    // Constants.ROLE_ADMIN, Constants.ROLE_GUEST -> No sync needed
                 }
             } catch (e: Exception) {
                 println("Profile sync error: ${e.message}")
@@ -76,7 +76,7 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
             try {
                 when (user.role) {
                     Constants.ROLE_MEMBER -> syncFullMemberProfile(user)
-                    Constants.ROLE_STAFF -> syncFullStaffProfile(user)
+                    Constants.ROLE_STAFF -> syncFullStaffProfile(user)      // ADD BACK
                     Constants.ROLE_TRAINER -> syncFullTrainerProfile(user)
                 }
             } catch (e: Exception) {
@@ -122,6 +122,7 @@ class ProfileSyncHelper(private val firebaseService: FirebaseService) {
         }
     }
 
+    // Add syncFullStaffProfile method:
     private suspend fun syncFullStaffProfile(user: User) {
         staffRepository.getStaffByUserId(user.id).onSuccess { staff ->
             staff?.let {

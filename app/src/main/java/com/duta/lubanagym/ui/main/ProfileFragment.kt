@@ -78,11 +78,8 @@ class ProfileFragment : Fragment() {
         val userRole = preferenceHelper.getString(Constants.PREF_USER_ROLE)
 
         // Show admin panel button if user is admin/staff
-        if (userRole == Constants.ROLE_ADMIN || userRole == Constants.ROLE_STAFF) {
-            binding.btnAdminPanel.visibility = View.VISIBLE
-        } else {
-            binding.btnAdminPanel.visibility = View.GONE
-        }
+        binding.btnAdminPanel.visibility = View.GONE
+
 
         // Load user profile
         viewModel.loadUserProfile(userId)
@@ -97,12 +94,6 @@ class ProfileFragment : Fragment() {
         // Login button
         binding.btnLogin.setOnClickListener {
             val intent = Intent(requireContext(), LoginActivity::class.java)
-            startActivity(intent)
-        }
-
-        // Admin panel button
-        binding.btnAdminPanel.setOnClickListener {
-            val intent = Intent(requireContext(), AdminActivity::class.java)
             startActivity(intent)
         }
 

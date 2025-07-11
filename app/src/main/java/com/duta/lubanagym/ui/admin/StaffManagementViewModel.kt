@@ -20,7 +20,6 @@ class StaffManagementViewModel : ViewModel() {
     private val _updateResult = MutableLiveData<Result<Unit>>()
     val updateResult: LiveData<Result<Unit>> = _updateResult
 
-    // NEW: Delete result LiveData
     private val _deleteResult = MutableLiveData<Result<Unit>>()
     val deleteResult: LiveData<Result<Unit>> = _deleteResult
 
@@ -46,7 +45,6 @@ class StaffManagementViewModel : ViewModel() {
         }
     }
 
-    // NEW: Delete staff function
     fun deleteStaff(staffId: String) {
         viewModelScope.launch {
             try {

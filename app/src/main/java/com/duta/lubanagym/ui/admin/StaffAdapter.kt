@@ -12,7 +12,7 @@ import java.util.*
 
 class StaffAdapter(
     private val onStaffUpdate: (Staff, String, Any) -> Unit,
-    private val onDeleteStaff: (Staff) -> Unit // NEW: Delete callback
+    private val onDeleteStaff: (Staff) -> Unit
 ) : ListAdapter<Staff, StaffAdapter.StaffViewHolder>(StaffDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StaffViewHolder {
@@ -40,6 +40,7 @@ class StaffAdapter(
                 tvJoinDate.text = "Bergabung: ${dateFormat.format(Date(staff.joinDate))}"
 
                 // Setup status switch
+                switchStatus.setOnCheckedChangeListener(null) // Clear previous listener
                 switchStatus.isChecked = staff.isActive
                 switchStatus.setOnCheckedChangeListener { _, isChecked ->
                     if (isChecked != staff.isActive) {
@@ -47,7 +48,7 @@ class StaffAdapter(
                     }
                 }
 
-                // NEW: Setup delete button
+                // Setup delete button
                 btnDeleteStaff.setOnClickListener {
                     onDeleteStaff(staff)
                 }

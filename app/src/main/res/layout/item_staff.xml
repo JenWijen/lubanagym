@@ -86,7 +86,19 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp" />
 
-                <!-- NEW: Delete Button -->
+                <!-- Edit Button -->
+                <Button
+                    android:id="@+id/btnEditStaff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:text="✏️ Edit"
+                    android:textSize="10sp"
+                    android:backgroundTint="@color/blue"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="4dp"
+                    style="@style/Widget.MaterialComponents.Button" />
+
+                <!-- Delete Button -->
                 <Button
                     android:id="@+id/btnDeleteStaff"
                     android:layout_width="wrap_content"

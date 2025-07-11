@@ -44,12 +44,14 @@ class UserAdapter(
 
                 // Setup role spinner - TAMBAH TRAINER
                 val roles = arrayOf(
+                    Constants.ROLE_GUEST,
                     Constants.ROLE_MEMBER,
                     Constants.ROLE_STAFF,
                     Constants.ROLE_TRAINER,
                     Constants.ROLE_ADMIN
                 )
                 val roleDisplayNames = arrayOf(
+                    "👤 Guest",
                     "👥 Member",
                     "👨‍💼 Staff",
                     "🏋️ Trainer",
@@ -92,7 +94,8 @@ class UserAdapter(
                 Constants.ROLE_STAFF -> Pair(R.drawable.role_badge_staff, R.color.white)
                 Constants.ROLE_TRAINER -> Pair(R.drawable.role_badge_trainer, R.color.white)
                 Constants.ROLE_MEMBER -> Pair(R.drawable.role_badge_member, R.color.white)
-                else -> Pair(R.drawable.role_badge_member, R.color.white)
+                Constants.ROLE_GUEST -> Pair(R.drawable.role_badge_guest, R.color.white)
+                else -> Pair(R.drawable.role_badge_guest, R.color.white)
             }
 
             binding.tvRoleBadge.setBackgroundResource(backgroundRes)

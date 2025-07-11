@@ -74,28 +74,32 @@ class LoginActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "Login berhasil! Selamat datang ${user.username}", Toast.LENGTH_SHORT).show()
 
-                // Navigate based on role
-                if (user.role == Constants.ROLE_ADMIN || user.role == Constants.ROLE_STAFF) {
-                    // Admin/Staff langsung ke AdminActivity
-                    val intent = Intent(this, AdminActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                } else {
-                    // Member kembali ke MainActivity (akan otomatis show profile)
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
+                // Navigate based on role - UPDATED to include Staff
+                when (user.role) {
+                    Constants.ROLE_ADMIN, Constants.ROLE_STAFF -> {    // STAFF dapat akses AdminActivity
+                        // Admin & Staff ke AdminActivity
+                        val intent = Intent(this, AdminActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                    }
+                    Constants.ROLE_GUEST, Constants.ROLE_TRAINER, Constants.ROLE_MEMBER -> {
+                        // Guest, Member & Trainer ke MainActivity
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        startActivity(intent)
+                    }
+                    else -> {
+                        // Role tidak dikenal
+                        Toast.makeText(this, "Role tidak valid. Silakan hubungi administrator.", Toast.LENGTH_LONG).show()
+                        preferenceHelper.clear()
+                        return@onSuccess
+                    }
                 }
 
                 finish()
             }.onFailure { error ->
                 Toast.makeText(this, "Login gagal: ${error.message}", Toast.LENGTH_SHORT).show()
             }
-        }
-
-        viewModel.isLoading.observe(this) { isLoading ->
-            binding.btnLogin.isEnabled = !isLoading
-            binding.btnLogin.text = if (isLoading) "Loading..." else "Login"
         }
     }
 }

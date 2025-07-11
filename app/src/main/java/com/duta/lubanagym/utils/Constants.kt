@@ -8,6 +8,7 @@ object Constants {
     const val EQUIPMENT_COLLECTION = "equipment"
     const val TOKENS_COLLECTION = "tokens"
 
+    const val ROLE_GUEST = "guest"
     const val ROLE_MEMBER = "member"
     const val ROLE_STAFF = "staff"
     const val ROLE_TRAINER = "trainer"
@@ -56,7 +57,7 @@ object Constants {
     }
 
     fun isValidRole(role: String): Boolean {
-        return role in arrayOf(ROLE_MEMBER, ROLE_STAFF, ROLE_TRAINER, ROLE_ADMIN)
+        return role in arrayOf(ROLE_GUEST, ROLE_MEMBER, ROLE_STAFF, ROLE_TRAINER, ROLE_ADMIN)
     }
 
     fun isValidMembershipType(type: String): Boolean {

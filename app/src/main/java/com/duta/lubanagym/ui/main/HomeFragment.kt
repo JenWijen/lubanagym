@@ -111,9 +111,10 @@ class HomeFragment : Fragment() {
 
         if (isLoggedIn) {
             when (userRole) {
+                Constants.ROLE_GUEST -> setupGuestContent()
                 Constants.ROLE_MEMBER -> setupMemberContent()
                 Constants.ROLE_TRAINER -> setupTrainerContent()
-                Constants.ROLE_STAFF, Constants.ROLE_ADMIN -> setupStaffAdminContent()
+                Constants.ROLE_ADMIN -> setupStaffAdminContent()
                 else -> setupGuestContent()
             }
         } else {

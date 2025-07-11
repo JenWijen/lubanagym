@@ -20,8 +20,8 @@ class UserManagementViewModel : ViewModel() {
 
     private val firebaseService = FirebaseService()
     private val userRepository = UserRepository(firebaseService)
-    private val memberRepository = MemberRepository(firebaseService)
     private val staffRepository = StaffRepository(firebaseService)
+    private val memberRepository = MemberRepository(firebaseService)
     private val trainerRepository = TrainerRepository(firebaseService)
 
     private val _userList = MutableLiveData<Result<List<User>>>()
@@ -82,7 +82,7 @@ class UserManagementViewModel : ViewModel() {
                     val result = trainerRepository.deleteTrainerByUserId(userId)
                     result.isSuccess
                 }
-                Constants.ROLE_ADMIN -> true
+                Constants.ROLE_ADMIN, Constants.ROLE_GUEST -> true
                 else -> true
             }
         } catch (e: Exception) {
@@ -108,7 +108,6 @@ class UserManagementViewModel : ViewModel() {
                             if (cleanupSuccess) {
                                 when (newRole) {
                                     Constants.ROLE_MEMBER -> createMemberProfileWithUserData(user, oldRole)
-                                    Constants.ROLE_STAFF -> createStaffProfileWithUserData(user, oldRole)
                                     Constants.ROLE_TRAINER -> createTrainerProfileWithUserData(user, oldRole)
                                     Constants.ROLE_ADMIN -> {
                                         val cleanupMsg = if (oldRole != Constants.ROLE_ADMIN) {
@@ -162,7 +161,7 @@ class UserManagementViewModel : ViewModel() {
                         }
                     }
 
-                    Constants.ROLE_ADMIN -> {
+                    Constants.ROLE_ADMIN, Constants.ROLE_GUEST -> {
                         callback(true)
                     }
 
@@ -217,7 +216,14 @@ class UserManagementViewModel : ViewModel() {
                     isActive = true,
                     profileImageUrl = user.profileImageUrl,
                     createdAt = System.currentTimeMillis(),
-                    updatedAt = System.currentTimeMillis()
+                    updatedAt = System.currentTimeMillis(),
+
+                    // Extended profile data
+                    address = user.address,
+                    emergencyContact = user.emergencyContact,
+                    emergencyPhone = user.emergencyPhone,
+                    dateOfBirth = user.dateOfBirth,
+                    gender = user.gender
                 )
 
                 staffRepository.createStaff(newStaff).onSuccess {
@@ -264,3 +270,4 @@ class UserManagementViewModel : ViewModel() {
         return "LUBANA_MEMBER_${userId.take(8).uppercase()}"
     }
 }
+

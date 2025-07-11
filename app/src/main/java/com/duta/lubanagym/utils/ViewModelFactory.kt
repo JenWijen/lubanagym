@@ -13,7 +13,6 @@ class ViewModelFactory(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val memberRepository: MemberRepository,
-    private val staffRepository: StaffRepository,
     private val trainerRepository: TrainerRepository,
     private val equipmentRepository: EquipmentRepository,
     private val tokenRepository: TokenRepository
@@ -39,9 +38,6 @@ class ViewModelFactory(
             }
             modelClass.isAssignableFrom(MemberManagementViewModel::class.java) -> {
                 MemberManagementViewModel() as T
-            }
-            modelClass.isAssignableFrom(StaffManagementViewModel::class.java) -> {
-                StaffManagementViewModel() as T
             }
             modelClass.isAssignableFrom(TrainerManagementViewModel::class.java) -> {
                 TrainerManagementViewModel() as T

@@ -124,6 +124,7 @@ class UserManagementActivity : AppCompatActivity() {
 
     private fun showRoleChangeConfirmation(username: String, oldRole: String, newRole: String, onConfirm: () -> Unit) {
         val roleInfo = mapOf(
+            "guest" to Pair("👤 Guest", "Akses terbatas, belum menjadi member"),
             "member" to Pair("👥 Member", "Akses gym standar, data member"),
             "staff" to Pair("👨‍💼 Staff", "Bantuan operasional, data staff"),
             "trainer" to Pair("🏋️ Trainer", "Pelatih fitness, data trainer"),
@@ -135,12 +136,12 @@ class UserManagementActivity : AppCompatActivity() {
 
         val cleanupMessage = when (oldRole) {
             newRole -> "⚠️ Tidak ada perubahan role"
-            "admin" -> "ℹ️ Admin tidak memiliki data terpisah"
+            "admin", "guest" -> "ℹ️ ${oldRoleInfo.first} tidak memiliki data terpisah"
             else -> "🗑️ ${oldRoleInfo.second} akan dihapus otomatis"
         }
 
         val createMessage = when (newRole) {
-            "admin" -> "ℹ️ Admin tidak memerlukan profil terpisah"
+            "admin", "guest" -> "ℹ️ ${newRoleInfo.first} tidak memerlukan profil terpisah"
             else -> "✨ ${newRoleInfo.second} akan dibuat otomatis"
         }
 

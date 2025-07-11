@@ -23,7 +23,7 @@ class AuthRepository(private val firebaseService: FirebaseService) {
                 id = userId,
                 email = email,
                 username = username,
-                role = Constants.ROLE_MEMBER,
+                role = Constants.ROLE_GUEST,
                 createdAt = System.currentTimeMillis(),
                 // Extended fields kosong - akan diisi di profile
                 isProfileComplete = false
@@ -75,7 +75,7 @@ class AuthRepository(private val firebaseService: FirebaseService) {
                 id = userDoc.id,
                 email = userDoc.getString("email") ?: "",
                 username = userDoc.getString("username") ?: "",
-                role = userDoc.getString("role") ?: Constants.ROLE_MEMBER,
+                role = userDoc.getString("role") ?: Constants.ROLE_GUEST,
                 createdAt = userDoc.getLong("createdAt") ?: 0L,
                 fullName = userDoc.getString("fullName") ?: "",
                 phone = userDoc.getString("phone") ?: "",

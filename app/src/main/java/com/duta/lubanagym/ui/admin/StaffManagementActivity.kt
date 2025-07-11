@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.duta.lubanagym.databinding.ActivityStaffManagementBinding
+import com.duta.lubanagym.data.model.Staff
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class StaffManagementActivity : AppCompatActivity() {
@@ -34,7 +35,9 @@ class StaffManagementActivity : AppCompatActivity() {
                 supportActionBar?.title = "Manajemen Staff"
             } catch (e: Exception) {
                 toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
-                toolbar.setNavigationOnClickListener { onBackPressed() }
+                toolbar.setNavigationOnClickListener {
+                    finish()
+                }
                 toolbar.title = "Manajemen Staff"
             }
         }
@@ -42,11 +45,11 @@ class StaffManagementActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         staffAdapter = StaffAdapter(
-            onStaffUpdate = { staff, field, value ->
+            onStaffUpdate = { staff: Staff, field: String, value: Any ->
                 val updates = mapOf(field to value)
                 viewModel.updateStaff(staff.id, updates)
             },
-            onDeleteStaff = { staff -> // NEW: Delete callback
+            onDeleteStaff = { staff: Staff ->
                 showDeleteStaffConfirmation(staff)
             }
         )
@@ -81,7 +84,6 @@ class StaffManagementActivity : AppCompatActivity() {
             }
         }
 
-        // NEW: Observer for delete result
         viewModel.deleteResult.observe(this) { result ->
             result.onSuccess {
                 Toast.makeText(this, "✅ Staff berhasil dihapus", Toast.LENGTH_SHORT).show()
@@ -92,8 +94,7 @@ class StaffManagementActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Show delete confirmation dialog
-    private fun showDeleteStaffConfirmation(staff: com.duta.lubanagym.data.model.Staff) {
+    private fun showDeleteStaffConfirmation(staff: Staff) {
         MaterialAlertDialogBuilder(this)
             .setTitle("🗑️ Konfirmasi Hapus Staff")
             .setMessage("""
@@ -119,7 +120,7 @@ class StaffManagementActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        finish()
         return true
     }
 }

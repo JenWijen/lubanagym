@@ -1,6 +1,6 @@
 package com.duta.lubanagym.data.model
 
-data class Staff(
+data class Staff (
     val id: String = "",
     val userId: String = "",
     val name: String = "",
