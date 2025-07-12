@@ -9,6 +9,7 @@ import com.duta.lubanagym.data.model.User
 import com.duta.lubanagym.data.model.Member
 import com.duta.lubanagym.data.repository.UserRepository
 import com.duta.lubanagym.data.repository.MemberRepository
+import com.duta.lubanagym.utils.ProfileSyncHelper
 import kotlinx.coroutines.launch
 
 class ProfileViewModel : ViewModel() {
@@ -16,6 +17,7 @@ class ProfileViewModel : ViewModel() {
     private val firebaseService = FirebaseService()
     private val userRepository = UserRepository(firebaseService)
     private val memberRepository = MemberRepository(firebaseService)
+    private val profileSyncHelper = ProfileSyncHelper(firebaseService)
 
     // FIXED: Explicit nullable type untuk clarity
     private val _userProfile = MutableLiveData<Result<User?>>()
@@ -95,6 +97,9 @@ class ProfileViewModel : ViewModel() {
             try {
                 val result = userRepository.updateUserProfile(userId, profileData)
                 result.onSuccess {
+                    // Sync profile data with member/staff/trainer data if needed
+                    profileSyncHelper.onUserProfileUpdated(userId)
+
                     _updateResult.postValue(Result.success("✅ Profil berhasil diperbarui"))
                     // Reload profile data untuk refresh UI
                     loadUserProfile(userId)

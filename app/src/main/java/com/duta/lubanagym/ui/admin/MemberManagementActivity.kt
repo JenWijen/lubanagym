@@ -6,6 +6,8 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.Member
 import com.duta.lubanagym.databinding.ActivityMemberManagementSimplifiedBinding
 import com.duta.lubanagym.databinding.DialogMemberDetailBinding
@@ -93,13 +95,24 @@ class MemberManagementActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Show member detail dialog
+    // UPDATED: Show member detail dialog with profile image
     private fun showMemberDetail(member: Member) {
         val dialogBinding = DialogMemberDetailBinding.inflate(layoutInflater)
 
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
         dialogBinding.apply {
+            // Load Profile Image
+            if (member.profileImageUrl.isNotEmpty()) {
+                Glide.with(this@MemberManagementActivity)
+                    .load(member.profileImageUrl)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
+                    .into(ivMemberDetailProfile)
+            } else {
+                ivMemberDetailProfile.setImageResource(R.drawable.ic_profile_placeholder)
+            }
+
             // Basic Info
             tvDetailName.text = member.name.ifEmpty { "Nama belum diatur" }
             tvDetailPhone.text = member.phone.ifEmpty { "No. telepon belum diatur" }

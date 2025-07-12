@@ -1,20 +1,33 @@
 package com.duta.lubanagym.ui.main
 
+import android.Manifest
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.User
 import com.duta.lubanagym.databinding.FragmentProfileBinding
 import com.duta.lubanagym.ui.admin.AdminActivity
 import com.duta.lubanagym.ui.auth.LoginActivity
+import com.duta.lubanagym.utils.CloudinaryService
 import com.duta.lubanagym.utils.Constants
 import com.duta.lubanagym.utils.PreferenceHelper
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,8 +37,14 @@ class ProfileFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: ProfileViewModel by viewModels()
     private lateinit var preferenceHelper: PreferenceHelper
+    private lateinit var cloudinaryService: CloudinaryService
     private var currentUser: User? = null
     private var isEditMode = false
+
+    // Image picker variables
+    private var selectedImageUri: Uri? = null
+    private lateinit var imagePickerLauncher: ActivityResultLauncher<Intent>
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     // Date picker variables
     private var selectedDateCalendar = Calendar.getInstance()
@@ -44,6 +63,9 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         preferenceHelper = PreferenceHelper(requireContext())
+        cloudinaryService = CloudinaryService()
+
+        setupImagePicker()
         setupClickListeners()
         observeViewModel()
     }
@@ -51,6 +73,45 @@ class ProfileFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         checkLoginStatus()
+    }
+
+    private fun setupImagePicker() {
+        // FIXED: Better image picker setup
+        imagePickerLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == android.app.Activity.RESULT_OK) {
+                val imageUri = result.data?.data
+                if (imageUri != null) {
+                    selectedImageUri = imageUri
+                    updateImagePreview(imageUri)
+                    Toast.makeText(requireContext(), "✅ Foto berhasil dipilih", Toast.LENGTH_SHORT).show()
+
+                    // FIXED: Jangan kembali ke display mode setelah pilih foto
+                    // Biarkan user tetap di edit mode untuk save changes
+                } else {
+                    Toast.makeText(requireContext(), "❌ Gagal memilih foto", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), "❌ Pemilihan foto dibatalkan", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        permissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissions[Manifest.permission.READ_MEDIA_IMAGES] == true
+            } else {
+                permissions[Manifest.permission.READ_EXTERNAL_STORAGE] == true
+            }
+
+            if (hasPermission) {
+                openImagePicker()
+            } else {
+                showPermissionDeniedDialog()
+            }
+        }
     }
 
     private fun checkLoginStatus() {
@@ -71,15 +132,21 @@ class ProfileFragment : Fragment() {
 
     private fun loadUserProfile() {
         binding.layoutNotLoggedIn.visibility = View.GONE
-        binding.layoutLoggedIn.visibility = View.VISIBLE
-        binding.layoutEditProfile.visibility = View.GONE
+
+        // FIXED: Pastikan tetap di edit mode jika sedang edit
+        if (isEditMode) {
+            binding.layoutLoggedIn.visibility = View.GONE
+            binding.layoutEditProfile.visibility = View.VISIBLE
+        } else {
+            binding.layoutLoggedIn.visibility = View.VISIBLE
+            binding.layoutEditProfile.visibility = View.GONE
+        }
 
         val userId = preferenceHelper.getString(Constants.PREF_USER_ID)
         val userRole = preferenceHelper.getString(Constants.PREF_USER_ROLE)
 
         // Show admin panel button if user is admin/staff
         binding.btnAdminPanel.visibility = View.GONE
-
 
         // Load user profile
         viewModel.loadUserProfile(userId)
@@ -109,6 +176,8 @@ class ProfileFragment : Fragment() {
 
         // Cancel edit button
         binding.btnCancelEdit.setOnClickListener {
+            // FIXED: Reset selected image when cancel
+            selectedImageUri = null
             toggleEditMode(false)
             currentUser?.let { user ->
                 displayUserProfile(user)
@@ -120,7 +189,7 @@ class ProfileFragment : Fragment() {
             logout()
         }
 
-        // NEW: Date picker for date of birth
+        // Date picker for date of birth
         binding.etDateOfBirth.setOnClickListener {
             showDatePickerDialog()
         }
@@ -128,6 +197,133 @@ class ProfileFragment : Fragment() {
         // Make the EditText non-focusable to prevent keyboard
         binding.etDateOfBirth.isFocusable = false
         binding.etDateOfBirth.isClickable = true
+
+        // Profile photo edit click listeners
+        binding.layoutEditPhoto.setOnClickListener {
+            if (isEditMode) {
+                pickImage()
+            }
+        }
+
+        binding.btnChangeProfilePhoto.setOnClickListener {
+            pickImage()
+        }
+    }
+
+    private fun pickImage() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED -> {
+                openImagePicker()
+            }
+            shouldShowRequestPermissionRationale(permission) -> {
+                showPermissionRationaleDialog()
+            }
+            else -> {
+                requestPermission()
+            }
+        }
+    }
+
+    private fun requestPermission() {
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        permissionLauncher.launch(permissions)
+    }
+
+    private fun showPermissionRationaleDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("🔐 Permission Diperlukan")
+            .setMessage("Aplikasi memerlukan akses ke galeri untuk memilih foto profil.")
+            .setPositiveButton("✅ Berikan Permission") { _, _ ->
+                requestPermission()
+            }
+            .setNegativeButton("❌ Batal") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun showPermissionDeniedDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("⚠️ Permission Ditolak")
+            .setMessage("Permission galeri ditolak. Anda masih dapat mengedit profil tanpa foto.")
+            .setPositiveButton("⚙️ Buka Settings") { _, _ ->
+                openAppSettings()
+            }
+            .setNegativeButton("📝 Lanjut", null)
+            .show()
+    }
+
+    private fun openAppSettings() {
+        try {
+            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = Uri.parse("package:${requireContext().packageName}")
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Tidak dapat membuka settings", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openImagePicker() {
+        try {
+            // FIXED: Improved image picker intent
+            val intent = Intent().apply {
+                action = Intent.ACTION_GET_CONTENT
+                type = "image/*"
+                addCategory(Intent.CATEGORY_OPENABLE)
+                // Add extra options for better compatibility
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false)
+                putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+            }
+
+            // Create chooser for better compatibility
+            val chooser = Intent.createChooser(intent, "Pilih Foto Profil")
+
+            // Check if gallery app is available
+            if (chooser.resolveActivity(requireContext().packageManager) != null) {
+                imagePickerLauncher.launch(chooser)
+            } else {
+                // Fallback to simple intent
+                imagePickerLauncher.launch(intent)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Error membuka galeri: ${e.message}", Toast.LENGTH_SHORT).show()
+            android.util.Log.e("ProfileFragment", "Error opening image picker", e)
+        }
+    }
+
+    private fun updateImagePreview(uri: Uri) {
+        try {
+            if (isEditMode) {
+                // Update edit profile image
+                Glide.with(this)
+                    .load(uri)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
+                    .into(binding.ivEditProfilePicture)
+            }
+
+            // Also update main profile image
+            Glide.with(this)
+                .load(uri)
+                .placeholder(R.drawable.ic_profile_placeholder)
+                .error(R.drawable.ic_profile_placeholder)
+                .into(binding.ivProfilePicture)
+
+            android.util.Log.d("ProfileFragment", "Image preview updated successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("ProfileFragment", "Error updating image preview", e)
+            Toast.makeText(requireContext(), "Error memuat preview foto", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showDatePickerDialog() {
@@ -225,6 +421,8 @@ class ProfileFragment : Fragment() {
         viewModel.updateResult.observe(viewLifecycleOwner) { result ->
             result.onSuccess { message ->
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                // FIXED: Reset selected image after successful save
+                selectedImageUri = null
                 toggleEditMode(false)
             }.onFailure { error ->
                 Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
@@ -269,6 +467,9 @@ class ProfileFragment : Fragment() {
                 else -> spinnerGender.setSelection(0)
             }
 
+            // Load profile image - FIXED: Better image loading
+            loadProfileImage(user.profileImageUrl)
+
             // Show profile completion status
             if (user.isProfileComplete) {
                 tvProfileStatus.text = "✅ Profil Lengkap"
@@ -277,6 +478,32 @@ class ProfileFragment : Fragment() {
                 tvProfileStatus.text = "⚠️ Profil Belum Lengkap"
                 tvProfileStatus.setTextColor(resources.getColor(android.R.color.holo_orange_dark, null))
             }
+        }
+    }
+
+    // FIXED: Separate method for loading profile image
+    private fun loadProfileImage(imageUrl: String) {
+        try {
+            if (imageUrl.isNotEmpty()) {
+                Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
+                    .into(binding.ivProfilePicture)
+
+                Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
+                    .into(binding.ivEditProfilePicture)
+            } else {
+                binding.ivProfilePicture.setImageResource(R.drawable.ic_profile_placeholder)
+                binding.ivEditProfilePicture.setImageResource(R.drawable.ic_profile_placeholder)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ProfileFragment", "Error loading profile image", e)
+            binding.ivProfilePicture.setImageResource(R.drawable.ic_profile_placeholder)
+            binding.ivEditProfilePicture.setImageResource(R.drawable.ic_profile_placeholder)
         }
     }
 
@@ -297,12 +524,16 @@ class ProfileFragment : Fragment() {
             if (editMode) {
                 layoutLoggedIn.visibility = View.GONE
                 layoutEditProfile.visibility = View.VISIBLE
+                layoutEditPhoto.visibility = View.VISIBLE
 
-                // Show date picker hint
-                Toast.makeText(requireContext(), "💡 Tap pada tanggal lahir untuk membuka date picker", Toast.LENGTH_LONG).show()
+                // Show tips
+                Toast.makeText(requireContext(), "💡 Tap pada foto profil untuk mengganti foto", Toast.LENGTH_LONG).show()
             } else {
                 layoutLoggedIn.visibility = View.VISIBLE
                 layoutEditProfile.visibility = View.GONE
+                layoutEditPhoto.visibility = View.GONE
+                // FIXED: Reset selected image when exit edit mode
+                selectedImageUri = null
             }
         }
     }
@@ -344,24 +575,53 @@ class ProfileFragment : Fragment() {
             return
         }
 
-        val profileData = mapOf(
-            "fullName" to fullName,
-            "phone" to phone,
-            "dateOfBirth" to dateOfBirth,
-            "gender" to gender,
-            "address" to address,
-            "emergencyContact" to emergencyContact,
-            "emergencyPhone" to emergencyPhone,
-            "bloodType" to bloodType,
-            "allergies" to allergies
-        )
+        lifecycleScope.launch {
+            try {
+                var profileImageUrl = currentUser?.profileImageUrl ?: ""
 
-        val userId = preferenceHelper.getString(Constants.PREF_USER_ID)
-        viewModel.updateProfile(userId, profileData)
+                // Upload new profile image if selected
+                selectedImageUri?.let { uri ->
+                    binding.progressBar.visibility = View.VISIBLE
+                    Toast.makeText(requireContext(), "📤 Mengupload foto profil...", Toast.LENGTH_SHORT).show()
+
+                    val uploadResult = cloudinaryService.uploadImage(uri, "profiles")
+                    uploadResult.onSuccess { url ->
+                        profileImageUrl = url
+                        Toast.makeText(requireContext(), "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                    }.onFailure { error ->
+                        Toast.makeText(requireContext(), "⚠️ Upload foto gagal: ${error.message}", Toast.LENGTH_LONG).show()
+                        // Continue with profile update even if image upload fails
+                    }
+                }
+
+                val profileData = mapOf(
+                    "fullName" to fullName,
+                    "phone" to phone,
+                    "dateOfBirth" to dateOfBirth,
+                    "gender" to gender,
+                    "address" to address,
+                    "emergencyContact" to emergencyContact,
+                    "emergencyPhone" to emergencyPhone,
+                    "bloodType" to bloodType,
+                    "allergies" to allergies,
+                    "profileImageUrl" to profileImageUrl
+                )
+
+                val userId = preferenceHelper.getString(Constants.PREF_USER_ID)
+                viewModel.updateProfile(userId, profileData)
+
+            } catch (e: Exception) {
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(requireContext(), "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                android.util.Log.e("ProfileFragment", "Error saving profile", e)
+            }
+        }
     }
 
     private fun logout() {
         preferenceHelper.clear()
+        selectedImageUri = null // Reset selected image
+        isEditMode = false // Reset edit mode
         checkLoginStatus()
         Toast.makeText(context, "Logout berhasil", Toast.LENGTH_SHORT).show()
     }

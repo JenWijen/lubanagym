@@ -6,6 +6,8 @@ import android.widget.ArrayAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.Member
 import com.duta.lubanagym.databinding.ItemMemberSimplifiedBinding
 import com.duta.lubanagym.utils.Constants
@@ -35,6 +37,18 @@ class MemberAdapter(
 
         fun bind(member: Member) {
             binding.apply {
+                // Profile Image
+                if (member.profileImageUrl.isNotEmpty()) {
+                    Glide.with(binding.root.context)
+                        .load(member.profileImageUrl)
+                        .placeholder(R.drawable.ic_profile_placeholder)
+                        .error(R.drawable.ic_profile_placeholder)
+                        .into(ivMemberProfile)
+                } else {
+                    ivMemberProfile.setImageResource(R.drawable.ic_profile_placeholder)
+                }
+
+                // Member Information
                 tvMemberName.text = member.name.ifEmpty { "Nama belum diatur" }
                 tvMemberPhone.text = member.phone.ifEmpty { "No. telepon belum diatur" }
                 tvMemberId.text = "ID: ${member.id.take(8)}"
@@ -95,6 +109,7 @@ class MemberAdapter(
                 })
 
                 // Setup status switch
+                switchStatus.setOnCheckedChangeListener(null) // Clear previous listener
                 switchStatus.isChecked = member.isActive
                 switchStatus.setOnCheckedChangeListener { _, isChecked ->
                     if (isChecked != member.isActive) {
