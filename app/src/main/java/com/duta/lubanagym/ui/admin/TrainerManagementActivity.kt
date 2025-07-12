@@ -396,8 +396,20 @@ class TrainerManagementActivity : AppCompatActivity() {
                 Toast.makeText(this, "❌ Nama trainer tidak boleh kosong", Toast.LENGTH_SHORT).show()
                 return false
             }
+            name.length < 3 -> {
+                Toast.makeText(this, "❌ Nama trainer minimal 3 karakter", Toast.LENGTH_SHORT).show()
+                return false
+            }
             phone.isEmpty() -> {
                 Toast.makeText(this, "❌ No. telepon tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                return false
+            }
+            phone.length < 10 -> {
+                Toast.makeText(this, "❌ No. telepon minimal 10 digit", Toast.LENGTH_SHORT).show()
+                return false
+            }
+            !isValidPhoneNumber(phone) -> {
+                Toast.makeText(this, "❌ Format no. telepon tidak valid", Toast.LENGTH_SHORT).show()
                 return false
             }
             specialization.isEmpty() -> {
@@ -409,6 +421,17 @@ class TrainerManagementActivity : AppCompatActivity() {
                 return false
             }
             else -> return true
+        }
+    }
+
+    private fun isValidPhoneNumber(phone: String): Boolean {
+        // Accept formats: 08xxxxxxxxx or +62xxxxxxxxx
+        val cleanPhone = phone.replace("[^0-9+]".toRegex(), "")
+        return when {
+            cleanPhone.startsWith("08") && cleanPhone.length >= 11 -> true
+            cleanPhone.startsWith("+628") && cleanPhone.length >= 13 -> true
+            cleanPhone.startsWith("628") && cleanPhone.length >= 12 -> true
+            else -> false
         }
     }
 
