@@ -2,6 +2,10 @@
 <resources>
     <string name="app_name">Lubana Gym</string>
 
+    <!-- NEW: Google Client ID - Ambil dari google-services.json -->
+    <!-- Ganti dengan Web Client ID dari Firebase Console -->
+    <string name="default_web_client_id">303026138882-o3nb43dbqf3jvg3sujprflms6kuk6f6m.apps.googleusercontent.com</string>
+
     <!-- Navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_equipment">Equipment</string>

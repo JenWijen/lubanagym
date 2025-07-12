@@ -37,12 +37,66 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Login Member"
+                android:text="Selamat Datang Kembali!"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
-                android:layout_marginBottom="30dp" />
+                android:layout_marginBottom="8dp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Masuk ke akun Anda dan lanjutkan perjalanan fitness"
+                android:textSize="16sp"
+                android:textColor="@color/text_secondary"
+                android:textAlignment="center"
+                android:layout_marginBottom="30dp"
+                android:lineSpacingExtra="2dp" />
+
+            <!-- Google Sign-In Button (Prioritas Utama) -->
+            <Button
+                android:id="@+id/btnGoogleSignIn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔍 Masuk dengan Google"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:backgroundTint="@color/blue"
+                android:textColor="@color/white"
+                android:layout_marginBottom="20dp"
+                style="@style/Widget.MaterialComponents.Button" />
+
+            <!-- Divider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/text_hint" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="atau masuk dengan email"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:paddingHorizontal="16dp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="@color/text_hint" />
+
+            </LinearLayout>
+
+            <!-- Email/Password Login Form -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -74,6 +128,7 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Login Button -->
             <Button
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
@@ -86,11 +141,12 @@
                 android:layout_marginBottom="20dp"
                 style="@style/Widget.MaterialComponents.Button" />
 
+            <!-- Register Link -->
             <TextView
                 android:id="@+id/tvRegister"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Belum punya akun? Daftar disini"
+                android:text="Belum punya akun? Daftar gratis disini"
                 android:textColor="@color/primary_color"
                 android:textStyle="bold" />
 

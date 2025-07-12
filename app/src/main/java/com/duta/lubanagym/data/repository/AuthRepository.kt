@@ -3,29 +3,25 @@ package com.duta.lubanagym.data.repository
 import com.duta.lubanagym.data.firebase.FirebaseService
 import com.duta.lubanagym.data.model.User
 import com.duta.lubanagym.utils.Constants
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.AuthCredential
 
 class AuthRepository(private val firebaseService: FirebaseService) {
 
-    suspend fun register(email: String, password: String, username: String, token: String): Result<String> {
+    // UPDATED: Register tanpa token
+    suspend fun register(email: String, password: String, username: String): Result<String> {
         return try {
-            // Verify token first
-            val tokenSnapshot = firebaseService.getCollectionWhere(Constants.TOKENS_COLLECTION, "token", token)
-            if (tokenSnapshot.documents.isEmpty() || tokenSnapshot.documents[0].getBoolean("isUsed") == true) {
-                return Result.failure(Exception("Token tidak valid atau sudah digunakan"))
-            }
-
-            // Register user
+            // Register user langsung tanpa verifikasi token
             val authResult = firebaseService.signUp(email, password)
             val userId = authResult.user?.uid ?: throw Exception("Gagal mendapatkan user ID")
 
-            // Create user document with minimal data - extended profile diisi nanti
+            // Create user document dengan role guest sebagai default
             val user = User(
                 id = userId,
                 email = email,
                 username = username,
-                role = Constants.ROLE_GUEST,
+                role = Constants.ROLE_GUEST, // Default sebagai guest
                 createdAt = System.currentTimeMillis(),
-                // Extended fields kosong - akan diisi di profile
                 isProfileComplete = false
             )
 
@@ -49,13 +45,83 @@ class AuthRepository(private val firebaseService: FirebaseService) {
             )
 
             firebaseService.addDocumentWithId(Constants.USERS_COLLECTION, userId, userMap)
-
-            // Mark token as used
-            val tokenDoc = tokenSnapshot.documents[0]
-            firebaseService.updateDocument(Constants.TOKENS_COLLECTION, tokenDoc.id,
-                mapOf("isUsed" to true, "usedAt" to System.currentTimeMillis()))
-
             Result.success(userId)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // NEW: Google Sign-In
+    suspend fun signInWithGoogle(idToken: String): Result<User> {
+        return try {
+            val credential: AuthCredential = GoogleAuthProvider.getCredential(idToken, null)
+            val authResult = firebaseService.signInWithGoogle(credential)
+            val userId = authResult.user?.uid ?: throw Exception("Gagal mendapatkan user ID")
+            val userEmail = authResult.user?.email ?: throw Exception("Gagal mendapatkan email")
+            val userName = authResult.user?.displayName ?: userEmail.substringBefore("@")
+            val profileImageUrl = authResult.user?.photoUrl?.toString() ?: ""
+
+            // Check if user already exists
+            val existingUserDoc = firebaseService.getDocument(Constants.USERS_COLLECTION, userId)
+
+            val user = if (existingUserDoc.exists()) {
+                // User sudah ada, return existing user
+                User(
+                    id = existingUserDoc.id,
+                    email = existingUserDoc.getString("email") ?: userEmail,
+                    username = existingUserDoc.getString("username") ?: userName,
+                    role = existingUserDoc.getString("role") ?: Constants.ROLE_GUEST,
+                    createdAt = existingUserDoc.getLong("createdAt") ?: System.currentTimeMillis(),
+                    fullName = existingUserDoc.getString("fullName") ?: userName,
+                    phone = existingUserDoc.getString("phone") ?: "",
+                    dateOfBirth = existingUserDoc.getString("dateOfBirth") ?: "",
+                    gender = existingUserDoc.getString("gender") ?: "",
+                    address = existingUserDoc.getString("address") ?: "",
+                    profileImageUrl = existingUserDoc.getString("profileImageUrl") ?: profileImageUrl,
+                    emergencyContact = existingUserDoc.getString("emergencyContact") ?: "",
+                    emergencyPhone = existingUserDoc.getString("emergencyPhone") ?: "",
+                    bloodType = existingUserDoc.getString("bloodType") ?: "",
+                    allergies = existingUserDoc.getString("allergies") ?: "",
+                    isProfileComplete = existingUserDoc.getBoolean("isProfileComplete") ?: false,
+                    updatedAt = existingUserDoc.getLong("updatedAt") ?: 0L
+                )
+            } else {
+                // User baru, create new user document
+                val newUser = User(
+                    id = userId,
+                    email = userEmail,
+                    username = userName,
+                    role = Constants.ROLE_GUEST,
+                    createdAt = System.currentTimeMillis(),
+                    fullName = userName,
+                    profileImageUrl = profileImageUrl,
+                    isProfileComplete = false
+                )
+
+                val userMap = mapOf(
+                    "email" to newUser.email,
+                    "username" to newUser.username,
+                    "role" to newUser.role,
+                    "createdAt" to newUser.createdAt,
+                    "fullName" to newUser.fullName,
+                    "phone" to newUser.phone,
+                    "dateOfBirth" to newUser.dateOfBirth,
+                    "gender" to newUser.gender,
+                    "address" to newUser.address,
+                    "profileImageUrl" to newUser.profileImageUrl,
+                    "emergencyContact" to newUser.emergencyContact,
+                    "emergencyPhone" to newUser.emergencyPhone,
+                    "bloodType" to newUser.bloodType,
+                    "allergies" to newUser.allergies,
+                    "isProfileComplete" to newUser.isProfileComplete,
+                    "updatedAt" to newUser.updatedAt
+                )
+
+                firebaseService.addDocumentWithId(Constants.USERS_COLLECTION, userId, userMap)
+                newUser
+            }
+
+            Result.success(user)
         } catch (e: Exception) {
             Result.failure(e)
         }

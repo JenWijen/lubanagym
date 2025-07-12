@@ -12,7 +12,6 @@
         android:padding="24dp"
         android:gravity="center">
 
-
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
@@ -23,12 +22,66 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Buat Akun Baru"
+            android:text="Bergabung dengan Lubana Gym!"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="30dp" />
+            android:layout_marginBottom="8dp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Daftar gratis dan mulai perjalanan fitness Anda bersama kami"
+            android:textSize="16sp"
+            android:textColor="@color/text_secondary"
+            android:textAlignment="center"
+            android:layout_marginBottom="30dp"
+            android:lineSpacingExtra="2dp" />
+
+        <!-- Google Sign-In Button (Prioritas Utama) -->
+        <Button
+            android:id="@+id/btnGoogleSignIn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔍 Masuk dengan Google"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/blue"
+            android:textColor="@color/white"
+            android:layout_marginBottom="20dp"
+            style="@style/Widget.MaterialComponents.Button" />
+
+        <!-- Divider -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="20dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/text_hint" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="atau daftar dengan email"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:paddingHorizontal="16dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/text_hint" />
+
+        </LinearLayout>
+
+        <!-- Registration Form -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -78,7 +131,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="24dp"
             android:hint="Konfirmasi Password"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:endIconMode="password_toggle">
@@ -91,32 +144,31 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:hint="Token Pendaftaran"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etToken"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapCharacters" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
+        <!-- Register Button -->
         <Button
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Daftar"
+            android:text="Daftar Sekarang"
             android:textSize="16sp"
             android:textStyle="bold"
             android:backgroundTint="@color/primary_color"
             android:textColor="@color/white"
             android:layout_marginBottom="20dp"
             style="@style/Widget.MaterialComponents.Button" />
+
+        <!-- Info Text -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pendaftaran GRATIS tanpa syarat!\nDapatkan akses ke semua fasilitas gym\nKonsultasi gratis dengan trainer profesional"
+            android:textSize="14sp"
+            android:textColor="@color/green"
+            android:textAlignment="center"
+            android:background="@color/background_color"
+            android:padding="12dp"
+            android:layout_marginBottom="20dp"
+            android:lineSpacingExtra="2dp" />
 
         <TextView
             android:id="@+id/tvLogin"

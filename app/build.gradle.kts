@@ -82,6 +82,9 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.storage.ktx)
 
+    // NEW: Google Sign-In
+    implementation(libs.play.services.auth)
+
     // Cloudinary
     implementation(libs.cloudinary.android)
 

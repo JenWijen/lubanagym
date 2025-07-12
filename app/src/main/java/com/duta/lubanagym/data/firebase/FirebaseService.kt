@@ -1,6 +1,7 @@
 package com.duta.lubanagym.data.firebase
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
@@ -23,10 +24,17 @@ class FirebaseService {
         throw e
     }
 
+    // NEW: Google Sign-In method
+    suspend fun signInWithGoogle(credential: AuthCredential) = try {
+        auth.signInWithCredential(credential).await()
+    } catch (e: Exception) {
+        throw e
+    }
+
     fun signOut() = auth.signOut()
     fun getCurrentUser() = auth.currentUser
 
-    // Firestore Methods
+    // Firestore Methods (unchanged)
     suspend fun addDocument(collection: String, data: Map<String, Any>) = try {
         firestore.collection(collection).add(data).await()
     } catch (e: Exception) {
@@ -69,7 +77,7 @@ class FirebaseService {
         throw e
     }
 
-    // Storage Methods
+    // Storage Methods (unchanged)
     fun getStorageReference(path: String) = storage.reference.child(path)
 
     suspend fun uploadFile(path: String, data: ByteArray) = try {
