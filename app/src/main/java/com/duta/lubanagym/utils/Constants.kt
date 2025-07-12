@@ -4,15 +4,16 @@ object Constants {
     const val USERS_COLLECTION = "users"
     const val MEMBERS_COLLECTION = "members"
     const val STAFF_COLLECTION = "staff"
-    const val TRAINERS_COLLECTION = "trainers"
+    const val TRAINERS_COLLECTION = "trainers" // Tetap ada tapi hanya sebagai data
     const val EQUIPMENT_COLLECTION = "equipment"
     const val TOKENS_COLLECTION = "tokens"
 
+    // HAPUS ROLE_TRAINER dari role user
     const val ROLE_GUEST = "guest"
     const val ROLE_MEMBER = "member"
     const val ROLE_STAFF = "staff"
-    const val ROLE_TRAINER = "trainer"
     const val ROLE_ADMIN = "admin"
+    // const val ROLE_TRAINER = "trainer" // DIHAPUS
 
     const val MEMBERSHIP_BASIC = "basic"
     const val MEMBERSHIP_PREMIUM = "premium"
@@ -57,7 +58,8 @@ object Constants {
     }
 
     fun isValidRole(role: String): Boolean {
-        return role in arrayOf(ROLE_GUEST, ROLE_MEMBER, ROLE_STAFF, ROLE_TRAINER, ROLE_ADMIN)
+        // HAPUS ROLE_TRAINER dari validasi
+        return role in arrayOf(ROLE_GUEST, ROLE_MEMBER, ROLE_STAFF, ROLE_ADMIN)
     }
 
     fun isValidMembershipType(type: String): Boolean {

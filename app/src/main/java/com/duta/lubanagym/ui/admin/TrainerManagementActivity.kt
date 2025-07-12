@@ -1,6 +1,7 @@
 package com.duta.lubanagym.ui.admin
 
 import android.Manifest
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -21,10 +22,13 @@ import com.bumptech.glide.Glide
 import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.Trainer
 import com.duta.lubanagym.databinding.ActivityTrainerManagementBinding
+import com.duta.lubanagym.databinding.DialogAddTrainerBinding
 import com.duta.lubanagym.databinding.DialogEditTrainerBinding
 import com.duta.lubanagym.utils.CloudinaryService
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TrainerManagementActivity : AppCompatActivity() {
 
@@ -35,7 +39,13 @@ class TrainerManagementActivity : AppCompatActivity() {
 
     // Image picker variables
     private var selectedImageUri: Uri? = null
+    private var currentAddDialogBinding: DialogAddTrainerBinding? = null
     private var currentEditDialogBinding: DialogEditTrainerBinding? = null
+    private var isEditMode = false
+
+    // Date picker variables
+    private var selectedDateCalendar = Calendar.getInstance()
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     // Activity result launchers
     private lateinit var imagePickerLauncher: ActivityResultLauncher<Intent>
@@ -50,6 +60,7 @@ class TrainerManagementActivity : AppCompatActivity() {
         setupImagePicker()
         setupToolbar()
         setupRecyclerView()
+        setupClickListeners()
         observeViewModel()
         loadTrainers()
     }
@@ -99,6 +110,13 @@ class TrainerManagementActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupClickListeners() {
+        // ADD: Floating Action Button untuk tambah trainer
+        binding.fabAddTrainer?.setOnClickListener {
+            showAddTrainerDialog()
+        }
+    }
+
     private fun setupRecyclerView() {
         trainerAdapter = TrainerAdapter(
             onEdit = { trainer, field, value ->
@@ -119,11 +137,133 @@ class TrainerManagementActivity : AppCompatActivity() {
         }
     }
 
-    // Show edit trainer dialog
+    // NEW: Show add trainer dialog
+    private fun showAddTrainerDialog() {
+        val dialogBinding = DialogAddTrainerBinding.inflate(layoutInflater)
+        currentAddDialogBinding = dialogBinding
+        selectedImageUri = null
+        isEditMode = false
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("➕ Tambah Trainer Baru")
+            .setView(dialogBinding.root)
+            .create()
+
+        // Setup image picker
+        dialogBinding.btnSelectProfileImage.setOnClickListener {
+            pickImage()
+        }
+
+        // Setup date picker
+        dialogBinding.etDateOfBirth.setOnClickListener {
+            showDatePickerDialog()
+        }
+
+        // Setup save button
+        dialogBinding.btnSaveTrainer.setOnClickListener {
+            saveNewTrainer(dialogBinding, dialog)
+        }
+
+        // Setup cancel button
+        dialogBinding.btnCancelTrainer.setOnClickListener {
+            dialog.dismiss()
+            currentAddDialogBinding = null
+        }
+
+        dialog.setOnDismissListener {
+            currentAddDialogBinding = null
+        }
+
+        dialog.show()
+    }
+
+    private fun saveNewTrainer(dialogBinding: DialogAddTrainerBinding, dialog: AlertDialog) {
+        val name = dialogBinding.etTrainerName.text.toString().trim()
+        val phone = dialogBinding.etTrainerPhone.text.toString().trim()
+        val specialization = dialogBinding.etSpecialization.text.toString().trim()
+        val experience = dialogBinding.etExperience.text.toString().trim()
+        val certification = dialogBinding.etCertification.text.toString().trim()
+        val hourlyRate = dialogBinding.etHourlyRate.text.toString().trim()
+        val availability = dialogBinding.etAvailability.text.toString().trim()
+        val bio = dialogBinding.etBio.text.toString().trim()
+        val address = dialogBinding.etAddress.text.toString().trim()
+        val dateOfBirth = dialogBinding.etDateOfBirth.text.toString().trim()
+        val emergencyContact = dialogBinding.etEmergencyContact.text.toString().trim()
+        val emergencyPhone = dialogBinding.etEmergencyPhone.text.toString().trim()
+        val bloodType = dialogBinding.etBloodType.text.toString().trim()
+        val allergies = dialogBinding.etAllergies.text.toString().trim()
+        val languages = dialogBinding.etLanguages.text.toString().trim()
+        val isActive = dialogBinding.switchTrainerActive.isChecked
+
+        val gender = when (dialogBinding.spinnerGender.selectedItemPosition) {
+            1 -> "male"
+            2 -> "female"
+            else -> ""
+        }
+
+        // Validation
+        if (validateTrainerInput(name, phone, specialization, experience)) {
+            lifecycleScope.launch {
+                try {
+                    binding.progressBar.visibility = View.VISIBLE
+
+                    var imageUrl = ""
+                    selectedImageUri?.let { uri ->
+                        Toast.makeText(this@TrainerManagementActivity, "📤 Mengupload foto...", Toast.LENGTH_SHORT).show()
+                        val uploadResult = cloudinaryService.uploadImage(uri, "trainers")
+                        uploadResult.onSuccess { url ->
+                            imageUrl = url
+                            Toast.makeText(this@TrainerManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                        }.onFailure {
+                            Toast.makeText(this@TrainerManagementActivity, "⚠️ Upload foto gagal, trainer akan disimpan tanpa foto", Toast.LENGTH_LONG).show()
+                        }
+                    }
+
+                    val trainer = Trainer(
+                        name = name,
+                        phone = phone,
+                        specialization = specialization,
+                        experience = experience,
+                        bio = bio,
+                        profileImageUrl = imageUrl,
+                        isActive = isActive,
+                        createdAt = System.currentTimeMillis(),
+                        updatedAt = System.currentTimeMillis(),
+
+                        // Extended fields
+                        address = address,
+                        emergencyContact = emergencyContact,
+                        emergencyPhone = emergencyPhone,
+                        dateOfBirth = dateOfBirth,
+                        gender = gender,
+                        bloodType = bloodType,
+                        allergies = allergies,
+
+                        // Additional trainer fields
+                        certification = certification,
+                        hourlyRate = hourlyRate,
+                        availability = availability,
+                        languages = languages
+                    )
+
+                    viewModel.createTrainer(trainer)
+                    dialog.dismiss()
+
+                } catch (e: Exception) {
+                    Toast.makeText(this@TrainerManagementActivity, "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    // Show edit trainer dialog (update existing method)
     private fun showEditTrainerDialog(trainer: Trainer) {
         val dialogBinding = DialogEditTrainerBinding.inflate(layoutInflater)
         currentEditDialogBinding = dialogBinding
         selectedImageUri = null
+        isEditMode = true
 
         dialogBinding.apply {
             // Fill current data
@@ -203,7 +343,8 @@ class TrainerManagementActivity : AppCompatActivity() {
                         "experience" to experience,
                         "bio" to bio,
                         "profileImageUrl" to imageUrl,
-                        "isActive" to isActive
+                        "isActive" to isActive,
+                        "updatedAt" to System.currentTimeMillis()
                     )
 
                     viewModel.updateTrainer(trainer.id, updates)
@@ -216,6 +357,37 @@ class TrainerManagementActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun showDatePickerDialog() {
+        val datePickerDialog = DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                selectedDateCalendar.set(year, month, dayOfMonth)
+                val formattedDate = dateFormat.format(selectedDateCalendar.time)
+
+                if (isEditMode) {
+                    // Currently we don't have date field in edit dialog, can be added if needed
+                } else {
+                    currentAddDialogBinding?.etDateOfBirth?.setText(formattedDate)
+                }
+
+                Toast.makeText(this, "📅 Tanggal lahir: $formattedDate", Toast.LENGTH_SHORT).show()
+            },
+            selectedDateCalendar.get(Calendar.YEAR),
+            selectedDateCalendar.get(Calendar.MONTH),
+            selectedDateCalendar.get(Calendar.DAY_OF_MONTH)
+        )
+
+        datePickerDialog.datePicker.apply {
+            maxDate = System.currentTimeMillis()
+            val minCalendar = Calendar.getInstance()
+            minCalendar.add(Calendar.YEAR, -100)
+            minDate = minCalendar.timeInMillis
+        }
+
+        datePickerDialog.setTitle("📅 Pilih Tanggal Lahir")
+        datePickerDialog.show()
     }
 
     private fun validateTrainerInput(name: String, phone: String, specialization: String, experience: String): Boolean {
@@ -278,11 +450,20 @@ class TrainerManagementActivity : AppCompatActivity() {
     }
 
     private fun updateImagePreview(uri: Uri) {
-        currentEditDialogBinding?.let { dialogBinding ->
-            Glide.with(this)
-                .load(uri)
-                .placeholder(R.drawable.ic_profile_placeholder)
-                .into(dialogBinding.ivTrainerProfile)
+        if (isEditMode) {
+            currentEditDialogBinding?.let { dialogBinding ->
+                Glide.with(this)
+                    .load(uri)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .into(dialogBinding.ivTrainerProfile)
+            }
+        } else {
+            currentAddDialogBinding?.let { dialogBinding ->
+                Glide.with(this)
+                    .load(uri)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .into(dialogBinding.ivTrainerPreview)
+            }
         }
     }
 
@@ -293,11 +474,23 @@ class TrainerManagementActivity : AppCompatActivity() {
                 binding.progressBar.visibility = View.GONE
 
                 if (trainers.isEmpty()) {
-                    Toast.makeText(this, "🏋️ Belum ada data trainer", Toast.LENGTH_SHORT).show()
+                    showEmptyState()
+                } else {
+                    hideEmptyState()
                 }
             }.onFailure { error ->
                 binding.progressBar.visibility = View.GONE
                 Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // NEW: Observer for create result
+        viewModel.createResult.observe(this) { result ->
+            result.onSuccess {
+                Toast.makeText(this, "✅ Trainer berhasil ditambahkan", Toast.LENGTH_SHORT).show()
+                loadTrainers()
+            }.onFailure { error ->
+                Toast.makeText(this, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -331,6 +524,7 @@ class TrainerManagementActivity : AppCompatActivity() {
                 🎯 Spesialisasi: ${trainer.specialization}
                 
                 ⚠️ Tindakan ini tidak dapat dibatalkan!
+                💡 Data trainer ini akan dihapus permanen dari sistem.
             """.trimIndent())
             .setPositiveButton("🗑️ Ya, Hapus") { _, _ ->
                 viewModel.deleteTrainer(trainer.id)
@@ -338,6 +532,15 @@ class TrainerManagementActivity : AppCompatActivity() {
             .setNegativeButton("❌ Batal", null)
             .setIcon(android.R.drawable.ic_dialog_alert)
             .show()
+    }
+
+    private fun showEmptyState() {
+        // You can add empty state view here if needed
+        Toast.makeText(this, "🏋️ Belum ada data trainer", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun hideEmptyState() {
+        // Hide empty state view if exists
     }
 
     private fun loadTrainers() {

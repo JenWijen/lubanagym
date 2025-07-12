@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
         preferenceHelper = PreferenceHelper(this)
 
-        // CHECK ADMIN ACCESS - REDIRECT JIKA ADMIN
+        // CHECK ADMIN ACCESS - REDIRECT JIKA ADMIN/STAFF
         checkAdminAccess()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         val isLoggedIn = preferenceHelper.getBoolean(Constants.PREF_IS_LOGGED_IN)
         val userRole = preferenceHelper.getString(Constants.PREF_USER_ROLE)
 
-        // UPDATE: Redirect both admin and staff
+        // UPDATED: Hanya admin dan staff yang redirect, HAPUS trainer dari sini
         if (isLoggedIn && (userRole == Constants.ROLE_ADMIN || userRole == Constants.ROLE_STAFF)) {
             // Admin & Staff tidak boleh mengakses MainActivity, redirect ke AdminActivity
             val intent = Intent(this, AdminActivity::class.java)
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Check lagi saat resume untuk memastikan admin tidak bisa bypass
+        // Check lagi saat resume untuk memastikan admin/staff tidak bisa bypass
         checkAdminAccess()
     }
 

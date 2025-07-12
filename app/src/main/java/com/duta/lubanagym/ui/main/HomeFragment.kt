@@ -113,7 +113,7 @@ class HomeFragment : Fragment() {
             when (userRole) {
                 Constants.ROLE_GUEST -> setupGuestContent()
                 Constants.ROLE_MEMBER -> setupMemberContent()
-                Constants.ROLE_TRAINER -> setupTrainerContent()
+                // HAPUS Constants.ROLE_TRAINER -> setupTrainerContent()
                 Constants.ROLE_ADMIN -> setupStaffAdminContent()
                 else -> setupGuestContent()
             }
@@ -121,6 +121,8 @@ class HomeFragment : Fragment() {
             setupGuestContent()
         }
     }
+
+    // HAPUS method setupTrainerContent() - tidak dibutuhkan lagi
 
     private fun setupMemberContent() {
         // Show member-specific content
@@ -136,25 +138,11 @@ class HomeFragment : Fragment() {
             • Protein: 1.6-2.2g per kg berat badan
             • Makan dalam 30 menit setelah workout
             • Kombinasi protein + karbohidrat untuk recovery
-        """.trimIndent()
-
-        binding.tvMembershipInfo.visibility = View.VISIBLE
-    }
-
-    private fun setupTrainerContent() {
-        binding.tvMembershipInfo.text = """
-            👨‍🏫 Panduan untuk Trainer:
-            • Selalu cek kondisi kesehatan member sebelum latihan
-            • Berikan program yang progresif dan terukur
-            • Motivasi member dengan positif dan sabar
-            • Update pengetahuan fitness secara berkala
-            • Catat progress setiap member
             
-            📋 Checklist Harian:
-            ✓ Cek semua peralatan sebelum digunakan
-            ✓ Siapkan program latihan untuk member
-            ✓ Monitor teknik dan safety member
-            ✓ Evaluasi progress mingguan member
+            🏋️ Trainer Tersedia:
+            • Konsultasi dengan trainer profesional kami
+            • Personal training untuk hasil maksimal
+            • Program khusus sesuai kebutuhan Anda
         """.trimIndent()
 
         binding.tvMembershipInfo.visibility = View.VISIBLE
@@ -166,7 +154,7 @@ class HomeFragment : Fragment() {
             • Monitoring operasional gym harian
             • Memastikan kebersihan dan keamanan
             • Melayani member dengan ramah dan profesional
-            • Update data member dan equipment
+            • Update data member, staff, trainer dan equipment
             • Koordinasi dengan trainer untuk program member
             
             📊 Fokus Hari Ini:
@@ -174,6 +162,7 @@ class HomeFragment : Fragment() {
             • Update data membership yang akan expired
             • Follow up inquiry calon member baru
             • Pastikan area gym bersih dan nyaman
+            • Kelola data trainer dan jadwal mereka
         """.trimIndent()
 
         binding.tvMembershipInfo.visibility = View.VISIBLE
@@ -186,15 +175,21 @@ class HomeFragment : Fragment() {
             🔥 Promo Spesial Bulan Ini:
             • Daftar sekarang dapat diskon 20%
             • Free trial 3 hari untuk member baru
-            • Gratis konsultasi dengan trainer
+            • Gratis konsultasi dengan trainer profesional
             • Tidak ada biaya pendaftaran
             
             💪 Mengapa Memilih Lubana Gym?
             • Lokasi strategis dan mudah diakses
             • Harga terjangkau dengan fasilitas premium
-            • Trainer berpengalaman dan ramah
+            • Trainer berpengalaman dan bersertifikat
             • Suasana workout yang motivating
             • Community yang supportive
+            
+            🏋️ Trainer Profesional:
+            • 8+ trainer berpengalaman
+            • Spesialisasi berbagai bidang fitness
+            • Personal training tersedia
+            • Konsultasi gratis untuk member
             
             📱 Daftar Sekarang:
             Hubungi admin untuk mendapatkan token registrasi

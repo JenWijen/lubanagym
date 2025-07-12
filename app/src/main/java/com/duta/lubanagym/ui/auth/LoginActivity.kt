@@ -74,16 +74,16 @@ class LoginActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "Login berhasil! Selamat datang ${user.username}", Toast.LENGTH_SHORT).show()
 
-                // Navigate based on role - UPDATED to include Staff
+                // UPDATED: Navigate based on role - HAPUS trainer case
                 when (user.role) {
-                    Constants.ROLE_ADMIN, Constants.ROLE_STAFF -> {    // STAFF dapat akses AdminActivity
+                    Constants.ROLE_ADMIN, Constants.ROLE_STAFF -> {
                         // Admin & Staff ke AdminActivity
                         val intent = Intent(this, AdminActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
                     }
-                    Constants.ROLE_GUEST, Constants.ROLE_TRAINER, Constants.ROLE_MEMBER -> {
-                        // Guest, Member & Trainer ke MainActivity
+                    Constants.ROLE_GUEST, Constants.ROLE_MEMBER -> {
+                        // Guest & Member ke MainActivity (HAPUS trainer dari sini)
                         val intent = Intent(this, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                         startActivity(intent)

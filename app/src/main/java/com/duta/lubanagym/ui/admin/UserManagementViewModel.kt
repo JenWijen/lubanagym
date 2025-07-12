@@ -8,11 +8,10 @@ import com.duta.lubanagym.data.firebase.FirebaseService
 import com.duta.lubanagym.data.model.User
 import com.duta.lubanagym.data.model.Member
 import com.duta.lubanagym.data.model.Staff
-import com.duta.lubanagym.data.model.Trainer
 import com.duta.lubanagym.data.repository.UserRepository
 import com.duta.lubanagym.data.repository.MemberRepository
 import com.duta.lubanagym.data.repository.StaffRepository
-import com.duta.lubanagym.data.repository.TrainerRepository
+// HAPUS import TrainerRepository
 import com.duta.lubanagym.utils.Constants
 import kotlinx.coroutines.launch
 
@@ -22,7 +21,7 @@ class UserManagementViewModel : ViewModel() {
     private val userRepository = UserRepository(firebaseService)
     private val staffRepository = StaffRepository(firebaseService)
     private val memberRepository = MemberRepository(firebaseService)
-    private val trainerRepository = TrainerRepository(firebaseService)
+    // HAPUS trainerRepository
 
     private val _userList = MutableLiveData<Result<List<User>>>()
     val userList: LiveData<Result<List<User>>> = _userList
@@ -78,10 +77,7 @@ class UserManagementViewModel : ViewModel() {
                     val result = staffRepository.deleteStaffByUserId(userId)
                     result.isSuccess
                 }
-                Constants.ROLE_TRAINER -> {
-                    val result = trainerRepository.deleteTrainerByUserId(userId)
-                    result.isSuccess
-                }
+                // HAPUS case Constants.ROLE_TRAINER
                 Constants.ROLE_ADMIN, Constants.ROLE_GUEST -> true
                 else -> true
             }
@@ -108,8 +104,8 @@ class UserManagementViewModel : ViewModel() {
                             if (cleanupSuccess) {
                                 when (newRole) {
                                     Constants.ROLE_MEMBER -> createMemberProfileWithUserData(user, oldRole)
-                                    Constants.ROLE_STAFF -> createStaffProfileWithUserData(user, oldRole)  // ADD BACK
-                                    Constants.ROLE_TRAINER -> createTrainerProfileWithUserData(user, oldRole)
+                                    Constants.ROLE_STAFF -> createStaffProfileWithUserData(user, oldRole)
+                                    // HAPUS case Constants.ROLE_TRAINER
                                     Constants.ROLE_ADMIN -> {
                                         val cleanupMsg = if (oldRole != Constants.ROLE_ADMIN) {
                                             " & data $oldRole dihapus"
@@ -160,13 +156,7 @@ class UserManagementViewModel : ViewModel() {
                         }
                     }
 
-                    Constants.ROLE_TRAINER -> {
-                        trainerRepository.deleteTrainerByUserId(userId).onSuccess {
-                            callback(true)
-                        }.onFailure {
-                            callback(false)
-                        }
-                    }
+                    // HAPUS case Constants.ROLE_TRAINER
 
                     Constants.ROLE_ADMIN, Constants.ROLE_GUEST -> {
                         callback(true)
@@ -245,36 +235,9 @@ class UserManagementViewModel : ViewModel() {
         }
     }
 
-    private fun createTrainerProfileWithUserData(user: User, oldRole: String) {
-        viewModelScope.launch {
-            try {
-                val newTrainer = Trainer(
-                    id = "",
-                    userId = user.id,
-                    name = if (user.fullName.isNotEmpty()) user.fullName else user.username,
-                    phone = user.phone,
-                    specialization = "General Fitness",
-                    experience = "Beginner",
-                    bio = "Trainer baru dari sistem dengan data profil lengkap",
-                    profileImageUrl = user.profileImageUrl,
-                    isActive = true,
-                    createdAt = System.currentTimeMillis()
-                )
-
-                trainerRepository.createTrainer(newTrainer).onSuccess {
-                    val cleanupMsg = if (oldRole != Constants.ROLE_TRAINER) " & data $oldRole dihapus" else ""
-                    _updateResult.postValue(Result.success("✅ Role diupdate ke Trainer, profil trainer dibuat dengan data lengkap$cleanupMsg"))
-                }.onFailure { error ->
-                    _updateResult.postValue(Result.failure(Exception("Role diupdate tapi gagal membuat profil trainer: ${error.message}")))
-                }
-            } catch (e: Exception) {
-                _updateResult.postValue(Result.failure(Exception("Error creating trainer profile: ${e.message}")))
-            }
-        }
-    }
+    // HAPUS createTrainerProfileWithUserData method
 
     private fun generateQRCode(userId: String): String {
         return "LUBANA_MEMBER_${userId.take(8).uppercase()}"
     }
 }
-

@@ -42,19 +42,19 @@ class UserAdapter(
                 // Setup role badge
                 setupRoleBadge(user.role)
 
-                // Setup role spinner - TAMBAH TRAINER
+                // UPDATED: Setup role spinner - HAPUS TRAINER
                 val roles = arrayOf(
                     Constants.ROLE_GUEST,
                     Constants.ROLE_MEMBER,
                     Constants.ROLE_STAFF,
-                    Constants.ROLE_TRAINER,
+                    // HAPUS Constants.ROLE_TRAINER,
                     Constants.ROLE_ADMIN
                 )
                 val roleDisplayNames = arrayOf(
                     "👤 Guest",
                     "👥 Member",
                     "👨‍💼 Staff",
-                    "🏋️ Trainer",
+                    // HAPUS "🏋️ Trainer",
                     "👨‍💻 Admin"
                 )
 
@@ -79,7 +79,7 @@ class UserAdapter(
                     override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
 
-                // NEW: Setup delete button
+                // Setup delete button
                 btnDeleteUser.setOnClickListener {
                     onDeleteUser(user)
                 }
@@ -92,7 +92,7 @@ class UserAdapter(
             val (backgroundRes, textColorRes) = when (role) {
                 Constants.ROLE_ADMIN -> Pair(R.drawable.role_badge_admin, R.color.white)
                 Constants.ROLE_STAFF -> Pair(R.drawable.role_badge_staff, R.color.white)
-                Constants.ROLE_TRAINER -> Pair(R.drawable.role_badge_trainer, R.color.white)
+                // HAPUS Constants.ROLE_TRAINER case
                 Constants.ROLE_MEMBER -> Pair(R.drawable.role_badge_member, R.color.white)
                 Constants.ROLE_GUEST -> Pair(R.drawable.role_badge_guest, R.color.white)
                 else -> Pair(R.drawable.role_badge_guest, R.color.white)
