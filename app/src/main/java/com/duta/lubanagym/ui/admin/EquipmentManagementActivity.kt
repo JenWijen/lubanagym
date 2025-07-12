@@ -116,21 +116,47 @@ class EquipmentManagementActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         equipmentAdapter = EquipmentManagementAdapter(
             onEdit = { equipment, field, value ->
-                val updates = mapOf(field to value)
+                // FIXED: Validate equipment ID before update
+                if (equipment.id.isEmpty()) {
+                    Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
+                    android.util.Log.e("EquipmentUpdate", "Cannot update: Equipment ID is empty")
+                    // Reload data to refresh adapter
+                    loadEquipment()
+                    return@EquipmentManagementAdapter
+                }
+
+                val updates = mapOf(field to value, "updatedAt" to System.currentTimeMillis())
+                android.util.Log.d("EquipmentUpdate", "Updating equipment ${equipment.id}: $field = $value")
                 viewModel.updateEquipment(equipment.id, updates)
             },
             onDelete = { equipment ->
+                if (equipment.id.isEmpty()) {
+                    Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
+                    return@EquipmentManagementAdapter
+                }
                 showDeleteConfirmation(equipment)
             },
             onUploadImage = { equipment ->
+                if (equipment.id.isEmpty()) {
+                    Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
+                    return@EquipmentManagementAdapter
+                }
                 currentEquipmentId = equipment.id
                 isEditMode = false
                 pickImage()
             },
-            onViewDetail = { equipment -> // NEW: Detail callback
+            onViewDetail = { equipment ->
+                if (equipment.id.isEmpty()) {
+                    Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
+                    return@EquipmentManagementAdapter
+                }
                 showEquipmentDetail(equipment)
             },
-            onEditEquipment = { equipment -> // NEW: Edit callback
+            onEditEquipment = { equipment ->
+                if (equipment.id.isEmpty()) {
+                    Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
+                    return@EquipmentManagementAdapter
+                }
                 showEditEquipmentDialog(equipment)
             }
         )
@@ -186,7 +212,17 @@ class EquipmentManagementActivity : AppCompatActivity() {
     }
 
     // NEW: Show edit equipment dialog
+    // FIXED: Improved showEditEquipmentDialog with validation
     private fun showEditEquipmentDialog(equipment: Equipment) {
+        // FIXED: Validate equipment ID first
+        if (equipment.id.isEmpty()) {
+            Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
+            android.util.Log.e("EquipmentEdit", "Equipment ID is empty: $equipment")
+            return
+        }
+
+        android.util.Log.d("EquipmentEdit", "Editing equipment with ID: ${equipment.id}")
+
         val dialogBinding = DialogEditEquipmentBinding.inflate(layoutInflater)
         currentEditDialogBinding = dialogBinding
         selectedImageUri = null
@@ -195,10 +231,19 @@ class EquipmentManagementActivity : AppCompatActivity() {
         dialogBinding.apply {
             // Fill current data
             etEditName.setText(equipment.name)
-            etEditCategory.setText(equipment.category)
             etEditDescription.setText(equipment.description)
             etEditInstructions.setText(equipment.instructions)
             switchEditAvailable.isChecked = equipment.isAvailable
+
+            // Set category spinner selection
+            val categories = resources.getStringArray(R.array.equipment_categories)
+            val categoryIndex = categories.indexOf(equipment.category)
+            if (categoryIndex >= 0) {
+                spinnerEditCategory.setSelection(categoryIndex)
+            } else {
+                // If category not found, select first item (usually a default option)
+                spinnerEditCategory.setSelection(0)
+            }
 
             // Load current image
             if (equipment.imageUrl.isNotEmpty()) {
@@ -236,12 +281,31 @@ class EquipmentManagementActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    // FIXED: Improved saveEditEquipment with better error handling
     private fun saveEditEquipment(equipment: Equipment, dialogBinding: DialogEditEquipmentBinding, dialog: AlertDialog) {
+        // FIXED: Validate equipment ID again
+        if (equipment.id.isEmpty()) {
+            Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val name = dialogBinding.etEditName.text.toString().trim()
-        val category = dialogBinding.etEditCategory.text.toString().trim()
         val description = dialogBinding.etEditDescription.text.toString().trim()
         val instructions = dialogBinding.etEditInstructions.text.toString().trim()
         val isAvailable = dialogBinding.switchEditAvailable.isChecked
+
+        // Get category from spinner
+        val categoryPosition = dialogBinding.spinnerEditCategory.selectedItemPosition
+        val category = if (categoryPosition >= 0) {
+            val categories = resources.getStringArray(R.array.equipment_categories)
+            if (categoryPosition < categories.size) {
+                categories[categoryPosition]
+            } else {
+                equipment.category // Keep original if index out of bounds
+            }
+        } else {
+            equipment.category // Keep original if nothing selected
+        }
 
         if (validateEquipmentInput(name, description, category, instructions)) {
             lifecycleScope.launch {
@@ -257,12 +321,12 @@ class EquipmentManagementActivity : AppCompatActivity() {
                         uploadResult.onSuccess { url ->
                             imageUrl = url
                             Toast.makeText(this@EquipmentManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
-                        }.onFailure {
-                            Toast.makeText(this@EquipmentManagementActivity, "⚠️ Upload foto gagal, menggunakan foto lama", Toast.LENGTH_LONG).show()
+                        }.onFailure { error ->
+                            Toast.makeText(this@EquipmentManagementActivity, "⚠️ Upload foto gagal: ${error.message}", Toast.LENGTH_LONG).show()
                         }
                     }
 
-                    // Update equipment
+                    // FIXED: Add more comprehensive update data
                     val updates = mapOf(
                         "name" to name,
                         "description" to description,
@@ -273,15 +337,37 @@ class EquipmentManagementActivity : AppCompatActivity() {
                         "updatedAt" to System.currentTimeMillis()
                     )
 
+                    android.util.Log.d("EquipmentEdit", "Updating equipment ${equipment.id} with data: $updates")
+
+                    // FIXED: Use equipment.id directly and add error handling
                     viewModel.updateEquipment(equipment.id, updates)
                     dialog.dismiss()
 
                 } catch (e: Exception) {
+                    android.util.Log.e("EquipmentEdit", "Error updating equipment: ${e.message}", e)
                     Toast.makeText(this@EquipmentManagementActivity, "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 } finally {
                     binding.progressBar.visibility = View.GONE
                 }
             }
+        }
+    }
+
+    private fun getCategoryFromSpinner(spinner: android.widget.Spinner): String {
+        val position = spinner.selectedItemPosition
+        return if (position >= 0) {
+            val categories = resources.getStringArray(R.array.equipment_categories)
+            categories[position]
+        } else {
+            ""
+        }
+    }
+
+    private fun setCategorySpinnerSelection(spinner: android.widget.Spinner, category: String) {
+        val categories = resources.getStringArray(R.array.equipment_categories)
+        val index = categories.indexOf(category)
+        if (index >= 0) {
+            spinner.setSelection(index)
         }
     }
 
@@ -382,6 +468,14 @@ class EquipmentManagementActivity : AppCompatActivity() {
     private fun observeViewModel() {
         viewModel.equipmentList.observe(this) { result ->
             result.onSuccess { equipmentList ->
+                // FIXED: Log equipment IDs for debugging
+                equipmentList.forEach { equipment ->
+                    android.util.Log.d("EquipmentList", "Equipment: ${equipment.name}, ID: ${equipment.id}")
+                    if (equipment.id.isEmpty()) {
+                        android.util.Log.e("EquipmentList", "Warning: Equipment '${equipment.name}' has empty ID!")
+                    }
+                }
+
                 equipmentAdapter.submitList(equipmentList)
                 binding.progressBar.visibility = View.GONE
 
@@ -393,6 +487,7 @@ class EquipmentManagementActivity : AppCompatActivity() {
                 }
             }.onFailure { error ->
                 binding.progressBar.visibility = View.GONE
+                android.util.Log.e("EquipmentList", "Error loading equipment: ${error.message}", error)
                 Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -402,6 +497,7 @@ class EquipmentManagementActivity : AppCompatActivity() {
                 Toast.makeText(this, "✅ Equipment berhasil ditambahkan", Toast.LENGTH_SHORT).show()
                 loadEquipment()
             }.onFailure { error ->
+                android.util.Log.e("EquipmentCreate", "Error creating equipment: ${error.message}", error)
                 Toast.makeText(this, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -416,6 +512,7 @@ class EquipmentManagementActivity : AppCompatActivity() {
                 }
                 loadEquipment()
             }.onFailure { error ->
+                android.util.Log.e("EquipmentUpdate", "Error updating equipment: ${error.message}", error)
                 Toast.makeText(this, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -425,6 +522,7 @@ class EquipmentManagementActivity : AppCompatActivity() {
                 Toast.makeText(this, "✅ Equipment berhasil dihapus", Toast.LENGTH_SHORT).show()
                 loadEquipment()
             }.onFailure { error ->
+                android.util.Log.e("EquipmentDelete", "Error deleting equipment: ${error.message}", error)
                 Toast.makeText(this, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -453,8 +551,17 @@ class EquipmentManagementActivity : AppCompatActivity() {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val name = dialogBinding.etName.text.toString().trim()
                 val description = dialogBinding.etDescription.text.toString().trim()
-                val category = dialogBinding.etCategory.text.toString().trim()
                 val instructions = dialogBinding.etInstructions.text.toString().trim()
+
+                // UPDATED: Get category from spinner
+                val categoryPosition = dialogBinding.spinnerCategory.selectedItemPosition
+                val category = if (categoryPosition > 0) {
+                    // Get categories array and select the chosen one
+                    val categories = resources.getStringArray(R.array.equipment_categories)
+                    categories[categoryPosition]
+                } else {
+                    ""
+                }
 
                 if (validateEquipmentInput(name, description, category, instructions)) {
                     createEquipment(name, description, category, instructions, dialog)
@@ -475,16 +582,28 @@ class EquipmentManagementActivity : AppCompatActivity() {
                 Toast.makeText(this, "❌ Nama alat tidak boleh kosong", Toast.LENGTH_SHORT).show()
                 return false
             }
+            name.length < 3 -> {
+                Toast.makeText(this, "❌ Nama alat minimal 3 karakter", Toast.LENGTH_SHORT).show()
+                return false
+            }
+            category.isEmpty() -> {
+                Toast.makeText(this, "❌ Pilih kategori alat gym", Toast.LENGTH_SHORT).show()
+                return false
+            }
             description.isEmpty() -> {
                 Toast.makeText(this, "❌ Deskripsi tidak boleh kosong", Toast.LENGTH_SHORT).show()
                 return false
             }
-            category.isEmpty() -> {
-                Toast.makeText(this, "❌ Kategori tidak boleh kosong", Toast.LENGTH_SHORT).show()
+            description.length < 10 -> {
+                Toast.makeText(this, "❌ Deskripsi minimal 10 karakter", Toast.LENGTH_SHORT).show()
                 return false
             }
             instructions.isEmpty() -> {
                 Toast.makeText(this, "❌ Instruksi tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                return false
+            }
+            instructions.length < 15 -> {
+                Toast.makeText(this, "❌ Instruksi minimal 15 karakter untuk keamanan pengguna", Toast.LENGTH_SHORT).show()
                 return false
             }
             else -> return true

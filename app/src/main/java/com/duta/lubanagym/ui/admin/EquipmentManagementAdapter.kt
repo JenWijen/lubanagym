@@ -16,8 +16,8 @@ class EquipmentManagementAdapter(
     private val onEdit: (Equipment, String, Any) -> Unit,
     private val onDelete: (Equipment) -> Unit,
     private val onUploadImage: (Equipment) -> Unit,
-    private val onViewDetail: (Equipment) -> Unit, // NEW: Detail callback
-    private val onEditEquipment: (Equipment) -> Unit // NEW: Edit callback
+    private val onViewDetail: (Equipment) -> Unit,
+    private val onEditEquipment: (Equipment) -> Unit
 ) : ListAdapter<Equipment, EquipmentManagementAdapter.EquipmentViewHolder>(EquipmentDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EquipmentViewHolder {
@@ -42,6 +42,9 @@ class EquipmentManagementAdapter(
                 tvEquipmentCategory.text = equipment.category
                 tvInstructions.text = equipment.instructions
 
+                // FIXED: Add debug log to check equipment ID
+                android.util.Log.d("EquipmentAdapter", "Binding equipment with ID: ${equipment.id}")
+
                 // Load equipment image
                 if (equipment.imageUrl.isNotEmpty()) {
                     Glide.with(binding.root.context)
@@ -54,31 +57,64 @@ class EquipmentManagementAdapter(
                 }
 
                 // Setup availability switch
+                // FIXED: Clear listener first to prevent unwanted triggers
+                switchAvailable.setOnCheckedChangeListener(null)
                 switchAvailable.isChecked = equipment.isAvailable
                 switchAvailable.setOnCheckedChangeListener { _: CompoundButton, isChecked: Boolean ->
                     if (isChecked != equipment.isAvailable) {
-                        onEdit(equipment, "isAvailable", isChecked)
+                        // FIXED: Validate equipment ID before calling onEdit
+                        if (equipment.id.isNotEmpty()) {
+                            android.util.Log.d("EquipmentAdapter", "Updating availability for equipment ID: ${equipment.id}")
+                            onEdit(equipment, "isAvailable", isChecked)
+                        } else {
+                            android.util.Log.e("EquipmentAdapter", "Equipment ID is empty!")
+                            // Reset switch to original state
+                            switchAvailable.setOnCheckedChangeListener(null)
+                            switchAvailable.isChecked = equipment.isAvailable
+                            switchAvailable.setOnCheckedChangeListener { _, newChecked ->
+                                if (newChecked != equipment.isAvailable && equipment.id.isNotEmpty()) {
+                                    onEdit(equipment, "isAvailable", newChecked)
+                                }
+                            }
+                        }
                     }
                 }
 
-                // NEW: Setup detail button (card click)
+                // Setup detail button (card click)
                 root.setOnClickListener {
-                    onViewDetail(equipment)
+                    if (equipment.id.isNotEmpty()) {
+                        onViewDetail(equipment)
+                    } else {
+                        android.util.Log.e("EquipmentAdapter", "Cannot view detail: Equipment ID is empty!")
+                    }
                 }
 
-                // NEW: Setup edit button
+                // Setup edit button
                 btnEditEquipment.setOnClickListener { _: View ->
-                    onEditEquipment(equipment)
+                    if (equipment.id.isNotEmpty()) {
+                        android.util.Log.d("EquipmentAdapter", "Edit button clicked for equipment ID: ${equipment.id}")
+                        onEditEquipment(equipment)
+                    } else {
+                        android.util.Log.e("EquipmentAdapter", "Cannot edit: Equipment ID is empty!")
+                    }
                 }
 
                 // Setup upload image button
                 btnUploadImage.setOnClickListener { _: View ->
-                    onUploadImage(equipment)
+                    if (equipment.id.isNotEmpty()) {
+                        onUploadImage(equipment)
+                    } else {
+                        android.util.Log.e("EquipmentAdapter", "Cannot upload image: Equipment ID is empty!")
+                    }
                 }
 
                 // Setup delete button
                 btnDelete.setOnClickListener { _: View ->
-                    onDelete(equipment)
+                    if (equipment.id.isNotEmpty()) {
+                        onDelete(equipment)
+                    } else {
+                        android.util.Log.e("EquipmentAdapter", "Cannot delete: Equipment ID is empty!")
+                    }
                 }
             }
         }
