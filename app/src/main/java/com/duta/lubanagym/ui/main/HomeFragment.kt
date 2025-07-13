@@ -197,6 +197,9 @@ class HomeFragment : Fragment() {
         """.trimIndent()
 
         binding.tvMembershipInfo.visibility = View.VISIBLE
+
+        // NEW: Show member registration button for guests
+        showMemberRegistrationButton()
     }
 
     private fun loadQuickStats() {
@@ -220,6 +223,14 @@ class HomeFragment : Fragment() {
         binding.tvQuickStats.visibility = View.VISIBLE
     }
 
+    private fun showMemberRegistrationButton() {
+        // Create and show button for guest to become member
+        binding.btnBecomeMember?.visibility = View.VISIBLE
+        binding.btnBecomeMember?.setOnClickListener {
+            val intent = Intent(requireContext(), com.duta.lubanagym.ui.member.RegisterMemberActivity::class.java)
+            startActivity(intent)
+        }
+    }
     private fun setupDevelopmentButton() {
         // Tap 5x pada gym name untuk show setup (development only)
         var tapCount = 0

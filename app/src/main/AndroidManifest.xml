@@ -69,6 +69,18 @@
             android:exported="false"
             android:theme="@style/Theme.LubanaGym" />
 
+        <activity
+            android:name=".ui.admin.QRScannerActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.admin.AdminActivity"
+            android:theme="@style/Theme.LubanaGym.Admin"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.member.RegisterMemberActivity"
+            android:exported="false"
+            android:theme="@style/Theme.LubanaGym.NoActionBar" />
+
         <!-- ADMIN ACTIVITIES - Gunakan theme khusus -->
         <activity
             android:name=".ui.admin.AdminActivity"

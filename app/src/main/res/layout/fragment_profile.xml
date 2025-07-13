@@ -472,14 +472,15 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Action Buttons -->
+
             <Button
-                android:id="@+id/btnAdminPanel"
+                android:id="@+id/btnBecomeMember"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🛠️ Buka Admin Panel"
+                android:text="💳 Jadi Member Sekarang"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:backgroundTint="@color/blue"
+                android:backgroundTint="@color/green"
                 android:textColor="@color/white"
                 android:layout_marginBottom="12dp"
                 android:visibility="gone"

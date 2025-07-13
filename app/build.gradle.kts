@@ -121,6 +121,7 @@ dependencies {
 
     // Additional libraries for QR Code
     implementation(libs.core)
+    implementation(libs.zxing.android.embedded)
 
     // Circle ImageView
     implementation(libs.circleimageview)

@@ -52,6 +52,20 @@ object Constants {
     const val MIN_PHONE_LENGTH = 10
     const val MIN_PASSWORD_LENGTH = 6
 
+    // Member Registration
+    const val MEMBER_REGISTRATIONS_COLLECTION = "member_registrations"
+    const val REGISTRATION_STATUS_PENDING = "pending"
+    const val REGISTRATION_STATUS_ACTIVATED = "activated"
+    const val REGISTRATION_STATUS_EXPIRED = "expired"
+
+    // QR Code prefixes
+    const val QR_CODE_REGISTRATION_PREFIX = "LUBANA_REG_"
+    const val QR_CODE_MEMBER_PREFIX = "LUBANA_MEMBER_"
+
+    // Registration validity (in milliseconds)
+    const val REGISTRATION_VALIDITY_DAYS = 5L
+    const val REGISTRATION_VALIDITY_MS = REGISTRATION_VALIDITY_DAYS * 24 * 60 * 60 * 1000L
+
     // Helper functions for profile completion
     fun getRequiredFields(): Array<String> {
         return PROFILE_REQUIRED_FIELDS

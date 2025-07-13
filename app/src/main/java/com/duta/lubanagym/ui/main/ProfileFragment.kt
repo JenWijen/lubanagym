@@ -208,6 +208,11 @@ class ProfileFragment : Fragment() {
         binding.btnChangeProfilePhoto.setOnClickListener {
             pickImage()
         }
+        // NEW: Button daftar member untuk guest
+        binding.btnBecomeMember?.setOnClickListener {
+            val intent = Intent(requireContext(), com.duta.lubanagym.ui.member.RegisterMemberActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun pickImage() {

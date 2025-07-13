@@ -85,6 +85,11 @@ class AdminActivity : AppCompatActivity() {
             startActivity(Intent(this, TokenManagementActivity::class.java))
         }
 
+        // NEW: QR Scanner button
+        binding.btnQrScanner?.setOnClickListener {
+            startActivity(Intent(this, QRScannerActivity::class.java))
+        }
+
         binding.btnLogout.setOnClickListener {
             logout()
         }
