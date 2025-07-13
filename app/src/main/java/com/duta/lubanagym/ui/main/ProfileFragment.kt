@@ -145,8 +145,6 @@ class ProfileFragment : Fragment() {
         val userId = preferenceHelper.getString(Constants.PREF_USER_ID)
         val userRole = preferenceHelper.getString(Constants.PREF_USER_ROLE)
 
-        // Show admin panel button if user is admin/staff
-        binding.btnAdminPanel.visibility = View.GONE
 
         // Load user profile
         viewModel.loadUserProfile(userId)

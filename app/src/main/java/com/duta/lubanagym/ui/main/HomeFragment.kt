@@ -1,5 +1,6 @@
 package com.duta.lubanagym.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -113,7 +114,6 @@ class HomeFragment : Fragment() {
             when (userRole) {
                 Constants.ROLE_GUEST -> setupGuestContent()
                 Constants.ROLE_MEMBER -> setupMemberContent()
-                // HAPUS Constants.ROLE_TRAINER -> setupTrainerContent()
                 Constants.ROLE_ADMIN -> setupStaffAdminContent()
                 else -> setupGuestContent()
             }
@@ -121,8 +121,6 @@ class HomeFragment : Fragment() {
             setupGuestContent()
         }
     }
-
-    // HAPUS method setupTrainerContent() - tidak dibutuhkan lagi
 
     private fun setupMemberContent() {
         // Show member-specific content
@@ -224,13 +222,14 @@ class HomeFragment : Fragment() {
     }
 
     private fun showMemberRegistrationButton() {
-        // Create and show button for guest to become member
-        binding.btnBecomeMember?.visibility = View.VISIBLE
-        binding.btnBecomeMember?.setOnClickListener {
+        // Show button for guest to become member
+        binding.btnBecomeMember.visibility = View.VISIBLE
+        binding.btnBecomeMember.setOnClickListener {
             val intent = Intent(requireContext(), com.duta.lubanagym.ui.member.RegisterMemberActivity::class.java)
             startActivity(intent)
         }
     }
+
     private fun setupDevelopmentButton() {
         // Tap 5x pada gym name untuk show setup (development only)
         var tapCount = 0

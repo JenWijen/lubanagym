@@ -153,10 +153,6 @@ class RegisterMemberActivity : AppCompatActivity() {
         binding.btnRegisterMember.setOnClickListener {
             registerMember()
         }
-
-        binding.btnBack?.setOnClickListener {
-            finish()
-        }
     }
 
     private fun registerMember() {

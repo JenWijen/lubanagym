@@ -13,16 +13,20 @@ import com.duta.lubanagym.databinding.ActivityQrScannerBinding
 import com.duta.lubanagym.utils.Constants
 import com.duta.lubanagym.utils.PreferenceHelper
 import com.google.zxing.Result
-import me.dm7.barcodescanner.zxing.ZXingScannerView
+import com.journeyapps.barcodescanner.CaptureManager
+import com.journeyapps.barcodescanner.DecoratedBarcodeView
+import com.journeyapps.barcodescanner.BarcodeCallback
+import com.journeyapps.barcodescanner.BarcodeResult
 import java.text.SimpleDateFormat
 import java.util.*
 
-class QRScannerActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
+class QRScannerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityQrScannerBinding
     private val viewModel: QRScannerViewModel by viewModels()
     private lateinit var preferenceHelper: PreferenceHelper
-    private lateinit var scannerView: ZXingScannerView
+    private lateinit var barcodeView: DecoratedBarcodeView
+    private lateinit var capture: CaptureManager
 
     companion object {
         private const val CAMERA_PERMISSION_REQUEST = 100
@@ -37,6 +41,10 @@ class QRScannerActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
 
         setupToolbar()
         setupScanner()
+
+        // Initialize CaptureManager with proper savedInstanceState
+        capture.initializeFromIntent(intent, savedInstanceState)
+
         observeViewModel()
         checkPermissionAndStartScanning()
     }
@@ -50,8 +58,17 @@ class QRScannerActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
     }
 
     private fun setupScanner() {
-        scannerView = ZXingScannerView(this)
-        binding.scannerContainer.addView(scannerView)
+        barcodeView = DecoratedBarcodeView(this)
+        binding.scannerContainer.addView(barcodeView)
+
+        val callback = object : BarcodeCallback {
+            override fun barcodeResult(result: BarcodeResult) {
+                handleResult(result.text)
+            }
+        }
+
+        barcodeView.decodeContinuous(callback)
+        capture = CaptureManager(this, barcodeView)
     }
 
     private fun checkPermissionAndStartScanning() {
@@ -68,25 +85,20 @@ class QRScannerActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
     }
 
     private fun startScanning() {
-        scannerView.setResultHandler(this)
-        scannerView.startCamera()
+        capture.onResume()
     }
 
     private fun stopScanning() {
-        scannerView.stopCamera()
+        capture.onPause()
     }
 
-    override fun handleResult(result: Result?) {
-        result?.let { qrResult ->
-            val qrCode = qrResult.text
+    private fun handleResult(qrCode: String) {
+        // Stop scanning temporarily
+        stopScanning()
 
-            // Stop scanning temporarily
-            stopScanning()
-
-            // Process QR code
-            val adminId = preferenceHelper.getString(Constants.PREF_USER_ID)
-            viewModel.processQRCode(qrCode, adminId)
-        }
+        // Process QR code
+        val adminId = preferenceHelper.getString(Constants.PREF_USER_ID)
+        viewModel.processQRCode(qrCode, adminId)
     }
 
     private fun observeViewModel() {
@@ -187,7 +199,7 @@ class QRScannerActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
 
     override fun onResume() {
         super.onResume()
-        if (::scannerView.isInitialized &&
+        if (::capture.isInitialized &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             startScanning()
         }
@@ -195,8 +207,22 @@ class QRScannerActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
 
     override fun onPause() {
         super.onPause()
-        if (::scannerView.isInitialized) {
+        if (::capture.isInitialized) {
             stopScanning()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::capture.isInitialized) {
+            capture.onDestroy()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (::capture.isInitialized) {
+            capture.onSaveInstanceState(outState)
         }
     }
 

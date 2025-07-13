@@ -153,6 +153,20 @@
                     android:lineSpacingExtra="4dp"
                     android:visibility="gone" />
 
+                <!-- Become Member Button (for guests) -->
+                <Button
+                    android:id="@+id/btnBecomeMember"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="💳 Jadi Member Sekarang!"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="@color/green"
+                    android:textColor="@color/white"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    style="@style/Widget.MaterialComponents.Button" />
+
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>

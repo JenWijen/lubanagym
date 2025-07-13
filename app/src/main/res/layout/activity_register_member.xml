@@ -23,6 +23,7 @@
                 app:titleTextColor="@color/white"
                 app:navigationIconTint="@color/white" />
 
+
         </com.google.android.material.appbar.AppBarLayout>
 
         <!-- Progress Bar -->
