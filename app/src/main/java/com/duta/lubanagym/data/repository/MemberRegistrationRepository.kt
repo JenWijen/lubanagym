@@ -1,3 +1,4 @@
+// Updated MemberRegistrationRepository.kt - Fixed profile sync after QR scan
 package com.duta.lubanagym.data.repository
 
 import com.duta.lubanagym.data.firebase.FirebaseService
@@ -99,6 +100,7 @@ class MemberRegistrationRepository(private val firebaseService: FirebaseService)
         }
     }
 
+    // FIXED: Enhanced activation with proper profile sync
     suspend fun activateRegistration(
         registrationId: String,
         activatedBy: String,
@@ -141,37 +143,46 @@ class MemberRegistrationRepository(private val firebaseService: FirebaseService)
                 return Result.failure(Exception("QR Code sudah expired"))
             }
 
-            // Update user role to member
+            // FIXED: Get latest user profile data before creating member
+            val userResult = userRepository.getUserById(registration.userId)
+            if (userResult.isFailure) {
+                return Result.failure(Exception("User tidak ditemukan"))
+            }
+
+            val currentUser = userResult.getOrThrow()
+
+            // FIXED: Update user role to member first
             val userUpdateResult = userRepository.updateUserRole(registration.userId, Constants.ROLE_MEMBER)
             if (userUpdateResult.isFailure) {
                 return Result.failure(Exception("Gagal update role user"))
             }
 
-            // Create member profile
+            // Calculate membership end date
             val membershipEndDate = Calendar.getInstance().apply {
                 timeInMillis = currentTime
                 add(Calendar.MONTH, registration.duration)
             }.timeInMillis
 
+            // FIXED: Create member profile with latest user data including Google profile image
             val member = Member(
                 userId = registration.userId,
-                name = registration.userFullName.ifEmpty { registration.userName },
-                phone = registration.userPhone,
+                name = if (currentUser.fullName.isNotEmpty()) currentUser.fullName else registration.userName,
+                phone = if (currentUser.phone.isNotEmpty()) currentUser.phone else registration.userPhone,
                 membershipType = registration.membershipType,
                 joinDate = currentTime,
                 expiryDate = membershipEndDate,
                 isActive = true,
-                profileImageUrl = "",
+                profileImageUrl = currentUser.profileImageUrl, // FIXED: Use current user's profile image
                 qrCode = "LUBANA_MEMBER_${registration.userId.take(8).uppercase()}",
 
-                // Extended profile data
-                address = registration.userAddress,
-                emergencyContact = registration.userEmergencyContact,
-                emergencyPhone = registration.userEmergencyPhone,
-                bloodType = registration.userBloodType,
-                allergies = registration.userAllergies,
-                dateOfBirth = registration.userDateOfBirth,
-                gender = registration.userGender
+                // FIXED: Use latest user profile data
+                address = if (currentUser.address.isNotEmpty()) currentUser.address else registration.userAddress,
+                emergencyContact = if (currentUser.emergencyContact.isNotEmpty()) currentUser.emergencyContact else registration.userEmergencyContact,
+                emergencyPhone = if (currentUser.emergencyPhone.isNotEmpty()) currentUser.emergencyPhone else registration.userEmergencyPhone,
+                bloodType = if (currentUser.bloodType.isNotEmpty()) currentUser.bloodType else registration.userBloodType,
+                allergies = if (currentUser.allergies.isNotEmpty()) currentUser.allergies else registration.userAllergies,
+                dateOfBirth = if (currentUser.dateOfBirth.isNotEmpty()) currentUser.dateOfBirth else registration.userDateOfBirth,
+                gender = if (currentUser.gender.isNotEmpty()) currentUser.gender else registration.userGender
             )
 
             val memberResult = memberRepository.createMember(member)
@@ -189,7 +200,7 @@ class MemberRegistrationRepository(private val firebaseService: FirebaseService)
 
             firebaseService.updateDocument(MEMBER_REGISTRATIONS_COLLECTION, registrationId, updates)
 
-            Result.success("Member berhasil diaktivasi")
+            Result.success("Member berhasil diaktivasi dengan data profil terbaru")
         } catch (e: Exception) {
             Result.failure(e)
         }

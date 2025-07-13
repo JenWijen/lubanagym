@@ -1,3 +1,4 @@
+// Updated RegisterMemberActivity.kt - Fixed status check for activated members
 package com.duta.lubanagym.ui.member
 
 import android.graphics.Bitmap
@@ -224,6 +225,7 @@ class RegisterMemberActivity : AppCompatActivity() {
         binding.layoutExistingRegistration.visibility = View.GONE
     }
 
+    // FIXED: Show existing registration with proper status handling
     private fun showExistingRegistration(registration: com.duta.lubanagym.data.model.MemberRegistration) {
         binding.layoutRegistrationForm.visibility = View.GONE
         binding.layoutExistingRegistration.visibility = View.VISIBLE
@@ -242,10 +244,23 @@ class RegisterMemberActivity : AppCompatActivity() {
 
             when {
                 registration.status == "activated" -> {
+                    // FIXED: Enhanced UI for activated status
                     tvRegistrationStatus.text = "✅ Sudah Diaktivasi"
                     tvRegistrationStatus.setTextColor(getColor(android.R.color.holo_green_dark))
-                    tvStatusDescription.text = "Selamat! Anda sudah menjadi member aktif Lubana Gym"
+
+                    val activationDate = if (registration.activationDate > 0) {
+                        "pada ${dateFormat.format(Date(registration.activationDate))}"
+                    } else {
+                        ""
+                    }
+
+                    tvStatusDescription.text = "🎉 Selamat! Anda sudah menjadi member aktif Lubana Gym $activationDate\n\n" +
+                            "✅ Status: Member Aktif\n" +
+                            "💳 Membership: ${registration.membershipType.uppercase()}\n" +
+                            "🔄 Profil Anda telah diupdate ke status Member"
+
                     btnNewRegistration.visibility = View.GONE
+                    layoutQrCode.visibility = View.GONE // Hide QR code as it's no longer needed
                 }
                 isExpired -> {
                     tvRegistrationStatus.text = "❌ QR Code Expired"
@@ -253,6 +268,7 @@ class RegisterMemberActivity : AppCompatActivity() {
                     tvStatusDescription.text = "QR Code sudah expired. Silakan daftar ulang untuk mendapatkan QR Code baru"
                     btnNewRegistration.visibility = View.VISIBLE
                     btnNewRegistration.text = "📝 Daftar Ulang"
+                    layoutQrCode.visibility = View.GONE
                 }
                 else -> {
                     tvRegistrationStatus.text = "⏳ Menunggu Aktivasi"

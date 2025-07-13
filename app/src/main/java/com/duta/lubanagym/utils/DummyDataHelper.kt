@@ -31,27 +31,7 @@ class DummyDataHelper(private val firebaseService: FirebaseService) {
             Result.failure(e)
         }
     }
-    suspend fun createDummyTokens(): Result<String> {
-        return try {
-            val tokens = listOf("GYM001", "GYM002", "GYM003", "TEST123", "DEMO456")
 
-            tokens.forEach { tokenString ->
-                val tokenData = mapOf(
-                    "token" to tokenString,
-                    "isUsed" to false,
-                    "createdAt" to System.currentTimeMillis(),
-                    "usedAt" to 0L,
-                    "createdBy" to "system"
-                )
-                firebaseService.addDocument(Constants.TOKENS_COLLECTION, tokenData)
-                delay(100) // Small delay to avoid rate limiting
-            }
-
-            Result.success("Created ${tokens.size} dummy tokens: ${tokens.joinToString(", ")}")
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 
     suspend fun createAllDummyData(): Result<String> {
         return try {
@@ -59,10 +39,6 @@ class DummyDataHelper(private val firebaseService: FirebaseService) {
 
             // Create admin
             createDummyAdmin().onSuccess { results.add(it) }
-            delay(1000)
-
-            // Create tokens
-            createDummyTokens().onSuccess { results.add(it) }
             delay(1000)
 
             Result.success("All dummy data created successfully!\n${results.joinToString("\n")}")

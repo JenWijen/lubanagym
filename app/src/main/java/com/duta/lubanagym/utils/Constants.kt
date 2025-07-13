@@ -6,7 +6,6 @@ object Constants {
     const val STAFF_COLLECTION = "staff"
     const val TRAINERS_COLLECTION = "trainers" // Tetap ada tapi hanya sebagai data
     const val EQUIPMENT_COLLECTION = "equipment"
-    const val TOKENS_COLLECTION = "tokens"
 
     // HAPUS ROLE_TRAINER dari role user
     const val ROLE_GUEST = "guest"

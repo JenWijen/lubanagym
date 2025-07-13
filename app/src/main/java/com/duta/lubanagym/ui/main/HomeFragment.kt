@@ -99,9 +99,6 @@ class HomeFragment : Fragment() {
             Instagram: @lubanagym
         """.trimIndent()
 
-        // Setup development button (for testing)
-        setupDevelopmentButton()
-
         // Setup quick stats
         loadQuickStats()
     }
@@ -230,129 +227,8 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun setupDevelopmentButton() {
-        // Tap 5x pada gym name untuk show setup (development only)
-        var tapCount = 0
-        binding.tvGymName.setOnClickListener {
-            tapCount++
-            if (tapCount >= 5) {
-                showDummyDataDialog()
-                tapCount = 0
-            }
-        }
 
-        // Development setup button
-        binding.btnHiddenSetup?.visibility = View.VISIBLE
-        binding.btnHiddenSetup?.setOnClickListener {
-            showDummyDataDialog()
-        }
-    }
 
-    private fun showDummyDataDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("🔧 Setup Development Data")
-            .setMessage("""
-                Buat data dummy untuk testing aplikasi?
-                
-                📱 Akun yang akan dibuat:
-                • Admin: admin@lubanagym.com / admin123
-                • Staff: staff@lubanagym.com / staff123
-                
-                🎫 Token Registration:
-                • GYM001, GYM002, GYM003, TEST123, DEMO456
-                
-                🏋️ Sample Data:
-                • 5 Equipment gym
-                • 3 Trainers
-                
-                ⚠️ Proses ini butuh koneksi internet yang stabil!
-            """.trimIndent())
-            .setPositiveButton("✅ Buat Sekarang") { _, _ ->
-                createDummyData()
-            }
-            .setNeutralButton("🔑 Buat Admin Saja") { _, _ ->
-                createAdminOnly()
-            }
-            .setNegativeButton("❌ Batal", null)
-            .show()
-    }
-
-    private fun createDummyData() {
-        lifecycleScope.launch {
-            try {
-                val firebaseService = FirebaseService()
-                val dummyDataHelper = DummyDataHelper(firebaseService)
-
-                binding.tvWelcome.text = "🔄 Sedang membuat data dummy... Mohon tunggu..."
-
-                val result = dummyDataHelper.createAllDummyData()
-
-                result.onSuccess { message ->
-                    binding.tvWelcome.text = "✅ Data dummy berhasil dibuat! Silakan login dengan akun admin."
-
-                    AlertDialog.Builder(requireContext())
-                        .setTitle("🎉 Berhasil!")
-                        .setMessage("""
-                            Data dummy berhasil dibuat!
-                            
-                            🔑 Login dengan:
-                            Email: admin@lubanagym.com
-                            Password: admin123
-                            
-                            📱 Buka tab Profile → Login untuk memulai!
-                        """.trimIndent())
-                        .setPositiveButton("OK", null)
-                        .show()
-                }.onFailure { error ->
-                    binding.tvWelcome.text = "❌ Gagal membuat data dummy. Coba lagi."
-                    Toast.makeText(requireContext(), "Error: ${error.message}", Toast.LENGTH_LONG).show()
-                }
-
-            } catch (e: Exception) {
-                binding.tvWelcome.text = "❌ Terjadi kesalahan. Periksa koneksi internet."
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    private fun createAdminOnly() {
-        lifecycleScope.launch {
-            try {
-                val firebaseService = FirebaseService()
-                val dummyDataHelper = DummyDataHelper(firebaseService)
-
-                binding.tvWelcome.text = "🔄 Membuat akun admin..."
-
-                val adminResult = dummyDataHelper.createDummyAdmin()
-                val tokenResult = dummyDataHelper.createDummyTokens()
-
-                if (adminResult.isSuccess && tokenResult.isSuccess) {
-                    binding.tvWelcome.text = "✅ Admin berhasil dibuat! Silakan login."
-
-                    AlertDialog.Builder(requireContext())
-                        .setTitle("🎉 Admin Berhasil Dibuat!")
-                        .setMessage("""
-                            🔑 Login dengan:
-                            Email: admin@lubanagym.com
-                            Password: admin123
-                            
-                            🎫 Token tersedia: GYM001, GYM002, GYM003
-                            
-                            📱 Buka tab Profile → Login!
-                        """.trimIndent())
-                        .setPositiveButton("OK", null)
-                        .show()
-                } else {
-                    binding.tvWelcome.text = "❌ Gagal membuat admin. Coba lagi."
-                    Toast.makeText(requireContext(), "Gagal membuat admin", Toast.LENGTH_SHORT).show()
-                }
-
-            } catch (e: Exception) {
-                binding.tvWelcome.text = "❌ Terjadi kesalahan. Periksa koneksi internet."
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
 
     override fun onResume() {
         super.onResume()
