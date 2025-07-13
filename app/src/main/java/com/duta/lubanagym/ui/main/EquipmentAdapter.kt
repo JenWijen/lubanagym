@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.Equipment
 import com.duta.lubanagym.databinding.ItemEquipmentBinding
@@ -31,22 +32,43 @@ class EquipmentAdapter(
 
         fun bind(equipment: Equipment) {
             binding.apply {
+                // Equipment info
                 tvEquipmentName.text = equipment.name
-                tvEquipmentDescription.text = equipment.description
                 tvEquipmentCategory.text = equipment.category
+                tvEquipmentDescription.text = equipment.description
 
-                // Load image with Glide
+                // Status badge with emoji
+                tvStatusBadge.text = if (equipment.isAvailable) "✅" else "⚠️"
+
+                // Load image with smooth animation
                 if (equipment.imageUrl.isNotEmpty()) {
-                    Glide.with(binding.root.context)
+                    Glide.with(root.context)
                         .load(equipment.imageUrl)
                         .placeholder(R.drawable.ic_equipment_placeholder)
+                        .error(R.drawable.ic_equipment_placeholder)
+                        .centerCrop()
+                        .transform(RoundedCorners(12))
                         .into(ivEquipment)
                 } else {
                     ivEquipment.setImageResource(R.drawable.ic_equipment_placeholder)
                 }
 
+                // Card click animation
                 root.setOnClickListener {
-                    onItemClick(equipment)
+                    // Simple scale animation
+                    root.animate()
+                        .scaleX(0.95f)
+                        .scaleY(0.95f)
+                        .setDuration(100)
+                        .withEndAction {
+                            root.animate()
+                                .scaleX(1.0f)
+                                .scaleY(1.0f)
+                                .setDuration(100)
+                                .start()
+                            onItemClick(equipment)
+                        }
+                        .start()
                 }
             }
         }

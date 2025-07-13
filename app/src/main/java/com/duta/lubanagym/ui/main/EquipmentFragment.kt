@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.Equipment
@@ -45,7 +46,21 @@ class EquipmentFragment : Fragment() {
 
         binding.rvEquipment.apply {
             adapter = equipmentAdapter
-            layoutManager = GridLayoutManager(context, 2)
+            layoutManager = GridLayoutManager(context, getSpanCount())
+            // Smooth scrolling
+            setHasFixedSize(true)
+            isNestedScrollingEnabled = false
+        }
+    }
+
+    private fun getSpanCount(): Int {
+        // Responsive grid based on screen width
+        val displayMetrics = resources.displayMetrics
+        val dpWidth = displayMetrics.widthPixels / displayMetrics.density
+        return when {
+            dpWidth >= 600 -> 3 // Tablet
+            dpWidth >= 480 -> 2 // Large phone
+            else -> 2 // Phone
         }
     }
 
@@ -53,39 +68,44 @@ class EquipmentFragment : Fragment() {
         val dialogBinding = DialogEquipmentDetailBinding.inflate(layoutInflater)
 
         dialogBinding.apply {
-            // Set equipment data
+            // Equipment info
             tvEquipmentName.text = equipment.name
             tvEquipmentCategory.text = equipment.category
             tvEquipmentDescription.text = equipment.description
             tvEquipmentInstructions.text = equipment.instructions
 
-            // Set availability status
+            // Availability status with better styling
             if (equipment.isAvailable) {
                 tvAvailabilityStatus.text = "✅ Tersedia"
-                tvAvailabilityStatus.setTextColor(requireContext().getColor(android.R.color.holo_green_dark))
+                tvAvailabilityStatus.setTextColor(
+                    requireContext().getColor(R.color.success_color)
+                )
             } else {
-                tvAvailabilityStatus.text = "❌ Tidak Tersedia"
-                tvAvailabilityStatus.setTextColor(requireContext().getColor(android.R.color.holo_red_dark))
+                tvAvailabilityStatus.text = "⚠️ Maintenance"
+                tvAvailabilityStatus.setTextColor(
+                    requireContext().getColor(R.color.warning_color)
+                )
             }
 
-            // Load equipment image
+            // Load image with better error handling
             if (equipment.imageUrl.isNotEmpty()) {
                 Glide.with(requireContext())
                     .load(equipment.imageUrl)
                     .placeholder(R.drawable.ic_equipment_placeholder)
                     .error(R.drawable.ic_equipment_placeholder)
+                    .centerCrop()
                     .into(ivEquipmentImage)
             } else {
                 ivEquipmentImage.setImageResource(R.drawable.ic_equipment_placeholder)
             }
+
+            // Hide edit button for members
+            btnEditEquipment.visibility = View.GONE
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogBinding.root)
             .create()
-
-        // Setup buttons
-        dialogBinding.btnEditEquipment.visibility = View.GONE // Hide edit for members
 
         dialogBinding.btnCloseDetail.setOnClickListener {
             dialog.dismiss()
@@ -97,27 +117,31 @@ class EquipmentFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.equipmentList.observe(viewLifecycleOwner) { result ->
             result.onSuccess { equipmentList ->
-                // Filter only available equipment for members
+                // Filter available equipment for better user experience
                 val availableEquipment = equipmentList.filter { it.isAvailable }
+
                 equipmentAdapter.submitList(availableEquipment)
                 binding.progressBar.visibility = View.GONE
 
                 if (availableEquipment.isEmpty()) {
-                    showEmptyState("🏋️‍♂️ Equipment sedang dalam maintenance\n\nSilakan coba lagi nanti atau hubungi staff gym")
+                    showEmptyState()
                 } else {
                     hideEmptyState()
                 }
             }.onFailure { error ->
                 binding.progressBar.visibility = View.GONE
-                showEmptyState("❌ Gagal memuat data equipment\n\nPeriksa koneksi internet Anda")
-                Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                showEmptyState()
+                Toast.makeText(
+                    context,
+                    "Gagal memuat equipment: ${error.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
 
-    private fun showEmptyState(message: String) {
+    private fun showEmptyState() {
         binding.layoutEmptyState.visibility = View.VISIBLE
-        binding.tvEmptyState.text = message
         binding.rvEquipment.visibility = View.GONE
     }
 

@@ -3,19 +3,37 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- Modern Color Palette -->
+<!--    <color name="primary_color">#FF5722</color>-->
+<!--    <color name="primary_dark">#D84315</color>-->
+<!--    <color name="primary_light">#FFAB91</color>-->
+
+    <color name="accent_color">#03DAC6</color>
+    <color name="accent_dark">#018786</color>
+
     <!-- Primary Colors -->
     <color name="primary_color">#B71C1C</color>
     <color name="primary_dark">#8B0000</color>
     <color name="primary_light">#FF5252</color>
+
+    <!-- Neutral Colors -->
+<!--    <color name="background_color">#FAFAFA</color>-->
+<!--    <color name="surface_color">#FFFFFF</color>-->
+    <color name="card_background">#FFFFFF</color>
 
     <!-- Secondary Colors -->
     <color name="secondary_color">#424242</color>
     <color name="secondary_dark">#212121</color>
     <color name="secondary_light">#757575</color>
 
-    <!-- Background Colors -->
+     Background Colors
     <color name="background_color">#F5F5F5</color>
     <color name="surface_color">#FFFFFF</color>
+
+    <!-- Text Colors -->
+<!--    <color name="text_primary">#1A1A1A</color>-->
+<!--    <color name="text_secondary">#666666</color>-->
+<!--    <color name="text_hint">#9E9E9E</color>-->
 
     <!-- Text Colors -->
     <color name="text_primary">#212121</color>
@@ -35,5 +53,9 @@
     <color name="error_color">#F44336</color>
     <color name="warning_color">#FF9800</color>
     <color name="success_color">#4CAF50</color>
+
+    !-- Transparent -->
+    <color name="overlay_dark">#80000000</color>
+    <color name="overlay_light">#40FFFFFF</color>
 
 </resources>

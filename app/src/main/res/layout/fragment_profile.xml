@@ -26,40 +26,39 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
+            android:padding="32dp"
             android:visibility="gone">
 
             <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:src="@drawable/ic_profile_placeholder"
-                android:layout_marginBottom="20dp"
-                android:alpha="0.6" />
+                android:layout_marginBottom="16dp"
+                android:alpha="0.7" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Selamat Datang di Lubana Gym!"
+                android:text="Welcome to Lubana Gym!"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
                 android:layout_marginBottom="8dp" />
 
             <TextView
-                android:id="@+id/tvLoginPrompt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Silakan login untuk melihat profil dan mengakses fitur lengkap"
-                android:textSize="16sp"
+                android:text="Login untuk mengakses profil dan fitur lengkap"
+                android:textSize="14sp"
                 android:textColor="@color/text_secondary"
                 android:textAlignment="center"
-                android:layout_marginBottom="24dp"
-                android:lineSpacingExtra="4dp" />
+                android:layout_marginBottom="24dp" />
 
             <Button
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Login Sekarang"
+                android:text="🚪 Login Sekarang"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:backgroundTint="@color/primary_color"
@@ -68,7 +67,7 @@
 
         </LinearLayout>
 
-        <!-- Layout ketika sudah login (Display Mode) -->
+        <!-- Layout ketika sudah login -->
         <LinearLayout
             android:id="@+id/layoutLoggedIn"
             android:layout_width="match_parent"
@@ -76,25 +75,25 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <!-- Header Profile Card -->
+            <!-- Profile Header Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="12dp">
+                android:layout_marginBottom="12dp"
+                app:cardElevation="3dp"
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp"
+                    android:padding="24dp"
                     android:gravity="center">
 
-                    <!-- Profile Image with Clickable Overlay -->
+                    <!-- Profile Image -->
                     <FrameLayout
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
                         android:layout_marginBottom="16dp">
 
                         <ImageView
@@ -105,7 +104,7 @@
                             android:background="@drawable/circle_background"
                             android:scaleType="centerCrop" />
 
-                        <!-- Photo Edit Overlay -->
+                        <!-- Edit Overlay (only visible in edit mode) -->
                         <LinearLayout
                             android:id="@+id/layoutEditPhoto"
                             android:layout_width="match_parent"
@@ -113,7 +112,8 @@
                             android:orientation="vertical"
                             android:gravity="center"
                             android:background="@drawable/circle_background"
-                            android:alpha="0.8"
+                            android:backgroundTint="@color/primary_color"
+                            android:alpha="0.9"
                             android:clickable="true"
                             android:focusable="true"
                             android:visibility="gone">
@@ -122,14 +122,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="📷"
-                                android:textSize="24sp"
+                                android:textSize="20sp"
                                 android:textColor="@color/white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Edit"
-                                android:textSize="12sp"
+                                android:textSize="10sp"
                                 android:textColor="@color/white"
                                 android:textStyle="bold" />
 
@@ -137,12 +137,13 @@
 
                     </FrameLayout>
 
+                    <!-- User Info -->
                     <TextView
                         android:id="@+id/tvUserName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Nama User"
-                        android:textSize="20sp"
+                        android:text="User Name"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_primary"
                         android:layout_marginBottom="4dp" />
@@ -152,205 +153,186 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="email@example.com"
-                        android:textSize="14sp"
+                        android:textSize="13sp"
                         android:textColor="@color/text_secondary"
                         android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvMembershipType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GUEST"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:background="@drawable/membership_badge"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvMemberId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ID: 00000000"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginBottom="4dp" />
 
                     <TextView
                         android:id="@+id/tvProfileStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="✅ Profil Lengkap"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
-
-                    <TextView
-                        android:id="@+id/tvMembershipType"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Guest"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@drawable/membership_badge"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
-                        android:layout_marginBottom="8dp" />
-
-                    <TextView
-                        android:id="@+id/tvMemberId"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ID: 12345678"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Personal Info Card -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Quick Info Cards -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="12dp">
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <!-- Personal Info Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    app:cardElevation="2dp"
+                    app:cardCornerRadius="12dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
                         <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="👤 Informasi Pribadi"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/text_primary" />
-
-                        <Button
-                            android:id="@+id/btnEditProfile"
                             android:layout_width="wrap_content"
-                            android:layout_height="32dp"
-                            android:text="✏️ Edit"
+                            android:layout_height="wrap_content"
+                            android:text="👤 Info Pribadi"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📱"
                             android:textSize="12sp"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            app:strokeColor="@color/primary_color"
-                            android:textColor="@color/primary_color" />
+                            android:layout_marginBottom="2dp" />
+
+                        <TextView
+                            android:id="@+id/tvPhone"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="08123456789"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="4dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📅"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="2dp" />
+
+                        <TextView
+                            android:id="@+id/tvDateOfBirth"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="01/01/1990"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary" />
 
                     </LinearLayout>
 
-                    <!-- Personal Info Items -->
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Emergency Contact Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    app:cardElevation="2dp"
+                    app:cardCornerRadius="12dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                        <!-- Phone -->
-                        <LinearLayout
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🚨 Kontak Darurat"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="👤"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="2dp" />
+
+                        <TextView
+                            android:id="@+id/tvEmergencyContact"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="8dp">
+                            android:text="Keluarga"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="4dp" />
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Telepon:"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="14sp" />
-
-                            <TextView
-                                android:id="@+id/tvPhone"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="08123456789"
-                                android:textColor="@color/text_primary"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                        </LinearLayout>
-
-                        <!-- Date of Birth -->
-                        <LinearLayout
+                        <TextView
+                            android:id="@+id/tvEmergencyPhone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="8dp">
+                            android:text="08123456789"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="4dp" />
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Tgl. Lahir:"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="14sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🩸"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="2dp" />
 
-                            <TextView
-                                android:id="@+id/tvDateOfBirth"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="01/01/1990"
-                                android:textColor="@color/text_primary"
-                                android:textSize="14sp" />
-
-                        </LinearLayout>
-
-                        <!-- Gender -->
-                        <LinearLayout
+                        <TextView
+                            android:id="@+id/tvBloodType"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="8dp">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Gender:"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="14sp" />
-
-                            <TextView
-                                android:id="@+id/tvGender"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="MALE"
-                                android:textColor="@color/text_primary"
-                                android:textSize="14sp" />
-
-                        </LinearLayout>
-
-                        <!-- Address -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="8dp">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Alamat:"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="14sp" />
-
-                            <TextView
-                                android:id="@+id/tvAddress"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Jl. Contoh No. 123"
-                                android:textColor="@color/text_primary"
-                                android:textSize="14sp" />
-
-                        </LinearLayout>
+                            android:text="O+"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary" />
 
                     </LinearLayout>
 
-                </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
-            <!-- Emergency Contact Card -->
+            <!-- Additional Info Card (collapsed by default) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="2dp"
                 app:cardCornerRadius="12dp">
 
                 <LinearLayout
@@ -362,99 +344,71 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🚨 Kontak Darurat"
-                        android:textSize="16sp"
+                        android:text="📋 Info Tambahan"
+                        android:textSize="14sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_primary"
                         android:layout_marginBottom="12dp" />
 
-                    <!-- Emergency Contact Name -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="6dp">
 
                         <TextView
-                            android:layout_width="100dp"
+                            android:layout_width="80dp"
                             android:layout_height="wrap_content"
-                            android:text="Nama:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                            android:text="Gender:"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
 
                         <TextView
-                            android:id="@+id/tvEmergencyContact"
+                            android:id="@+id/tvGender"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Nama Keluarga"
-                            android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
+                            android:text="Male"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary" />
 
                     </LinearLayout>
 
-                    <!-- Emergency Phone -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="6dp">
 
                         <TextView
-                            android:layout_width="100dp"
+                            android:layout_width="80dp"
                             android:layout_height="wrap_content"
-                            android:text="Telepon:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                            android:text="Alamat:"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
 
                         <TextView
-                            android:id="@+id/tvEmergencyPhone"
+                            android:id="@+id/tvAddress"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="08123456789"
-                            android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
+                            android:text="Jl. Contoh No. 123"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary" />
 
                     </LinearLayout>
 
-                    <!-- Blood Type -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
-
-                        <TextView
-                            android:layout_width="100dp"
-                            android:layout_height="wrap_content"
-                            android:text="Gol. Darah:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/tvBloodType"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="O+"
-                            android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
-
-                    </LinearLayout>
-
-                    <!-- Allergies -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
                         <TextView
-                            android:layout_width="100dp"
+                            android:layout_width="80dp"
                             android:layout_height="wrap_content"
                             android:text="Alergi:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="14sp" />
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary" />
 
                         <TextView
                             android:id="@+id/tvAllergies"
@@ -462,8 +416,8 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Tidak ada"
-                            android:textColor="@color/text_primary"
-                            android:textSize="14sp" />
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary" />
 
                     </LinearLayout>
 
@@ -472,26 +426,47 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Action Buttons -->
-
-            <Button
-                android:id="@+id/btnBecomeMember"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="💳 Jadi Member Sekarang"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:backgroundTint="@color/green"
-                android:textColor="@color/white"
-                android:layout_marginBottom="12dp"
-                android:visibility="gone"
-                style="@style/Widget.MaterialComponents.Button" />
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnEditProfile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="✏️ Edit Profil"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="@color/blue"
+                    android:textColor="@color/white"
+                    android:layout_marginEnd="8dp"
+                    style="@style/Widget.MaterialComponents.Button" />
+
+                <Button
+                    android:id="@+id/btnBecomeMember"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="💳 Jadi Member"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="@color/green"
+                    android:textColor="@color/white"
+                    android:layout_marginStart="8dp"
+                    android:visibility="gone"
+                    style="@style/Widget.MaterialComponents.Button" />
+
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="🚪 Logout"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 android:backgroundTint="@color/error_color"
                 android:textColor="@color/white"
@@ -499,7 +474,7 @@
 
         </LinearLayout>
 
-        <!-- Layout Edit Profile -->
+        <!-- Edit Profile Layout (simplified) -->
         <LinearLayout
             android:id="@+id/layoutEditProfile"
             android:layout_width="match_parent"
@@ -507,76 +482,59 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="✏️ Edit Profil"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="20dp" />
-
-            <!-- Profile Photo Edit Section -->
+            <!-- Edit Header -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="12dp">
+                app:cardElevation="3dp"
+                app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
+                    android:padding="20dp"
                     android:gravity="center">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📸 Foto Profil"
-                        android:textSize="16sp"
+                        android:text="✏️ Edit Profil"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_primary"
                         android:layout_marginBottom="16dp" />
 
                     <ImageView
                         android:id="@+id/ivEditProfilePicture"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
                         android:src="@drawable/ic_profile_placeholder"
                         android:background="@drawable/circle_background"
                         android:scaleType="centerCrop"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="12dp" />
 
                     <Button
                         android:id="@+id/btnChangeProfilePhoto"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📷 Ganti Foto Profil"
-                        android:textSize="14sp"
+                        android:layout_height="32dp"
+                        android:text="📷 Ganti Foto"
+                        android:textSize="12sp"
                         android:backgroundTint="@color/blue"
                         android:textColor="@color/white"
                         style="@style/Widget.MaterialComponents.Button" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Opsional - Foto akan diupload ke cloud"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginTop="8dp" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Personal Info Section -->
+            <!-- Form Fields (simplified) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardElevation="4dp"
+                app:cardElevation="2dp"
                 app:cardCornerRadius="12dp">
 
                 <LinearLayout
@@ -585,16 +543,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="👤 Informasi Pribadi"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Full Name -->
+                    <!-- Essential Fields Only -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -610,7 +559,6 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Phone -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -626,15 +574,12 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Date of Birth -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:hint="📅 Tanggal Lahir (DD/MM/YYYY)"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        app:endIconMode="custom"
-                        app:endIconDrawable="@drawable/ic_calendar">
+                        android:hint="📅 Tanggal Lahir"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etDateOfBirth"
@@ -642,13 +587,10 @@
                             android:layout_height="wrap_content"
                             android:inputType="none"
                             android:focusable="false"
-                            android:clickable="true"
-                            android:cursorVisible="false"
-                            android:background="@android:color/transparent" />
+                            android:clickable="true" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Gender Spinner -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -665,7 +607,6 @@
                         android:entries="@array/gender_options"
                         android:background="@drawable/spinner_background" />
 
-                    <!-- Address -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -678,44 +619,15 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPostalAddress"
-                            android:lines="2"
-                            android:gravity="top" />
+                            android:lines="2" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Emergency Contact Section -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🚨 Kontak Darurat"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Emergency Contact Name -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:hint="Nama Kontak Darurat"
+                        android:hint="Kontak Darurat"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -726,7 +638,6 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Emergency Phone -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -742,12 +653,11 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Blood Type -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:hint="Golongan Darah (A+, B+, O+, AB+, dst)"
+                        android:hint="Golongan Darah"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -758,11 +668,9 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Allergies -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
                         android:hint="Alergi (jika ada)"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
@@ -771,8 +679,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textMultiLine"
-                            android:lines="2"
-                            android:gravity="top" />
+                            android:lines="2" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -784,8 +691,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="16dp">
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btnSaveProfile"
@@ -793,7 +699,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="💾 Simpan"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:backgroundTint="@color/green"
                     android:textColor="@color/white"
@@ -806,7 +712,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="❌ Batal"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:layout_marginStart="8dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
