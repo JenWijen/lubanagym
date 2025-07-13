@@ -56,7 +56,6 @@ class AdminActivity : AppCompatActivity() {
         if (userRole == Constants.ROLE_STAFF) {
             // Staff can access limited features
             binding.btnUserManagement.visibility = android.view.View.GONE
-            binding.btnTokenManagement.visibility = android.view.View.GONE
         }
     }
 
@@ -79,10 +78,6 @@ class AdminActivity : AppCompatActivity() {
 
         binding.btnEquipmentManagement.setOnClickListener {
             startActivity(Intent(this, EquipmentManagementActivity::class.java))
-        }
-
-        binding.btnTokenManagement.setOnClickListener {
-            startActivity(Intent(this, TokenManagementActivity::class.java))
         }
 
         // NEW: QR Scanner button
