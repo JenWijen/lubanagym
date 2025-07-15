@@ -11,7 +11,6 @@ import com.duta.lubanagym.data.model.Staff
 import com.duta.lubanagym.data.repository.UserRepository
 import com.duta.lubanagym.data.repository.MemberRepository
 import com.duta.lubanagym.data.repository.StaffRepository
-// HAPUS import TrainerRepository
 import com.duta.lubanagym.utils.Constants
 import kotlinx.coroutines.launch
 
@@ -21,10 +20,19 @@ class UserManagementViewModel : ViewModel() {
     private val userRepository = UserRepository(firebaseService)
     private val staffRepository = StaffRepository(firebaseService)
     private val memberRepository = MemberRepository(firebaseService)
-    // HAPUS trainerRepository
+
+    enum class SortType {
+        NEWEST_FIRST,
+        OLDEST_FIRST,
+        NAME_A_Z,
+        NAME_Z_A
+    }
 
     private val _userList = MutableLiveData<Result<List<User>>>()
     val userList: LiveData<Result<List<User>>> = _userList
+
+    private val _filteredUserList = MutableLiveData<Result<List<User>>>()
+    val filteredUserList: LiveData<Result<List<User>>> = _filteredUserList
 
     private val _updateResult = MutableLiveData<Result<String>>()
     val updateResult: LiveData<Result<String>> = _updateResult
@@ -32,15 +40,81 @@ class UserManagementViewModel : ViewModel() {
     private val _deleteResult = MutableLiveData<Result<String>>()
     val deleteResult: LiveData<Result<String>> = _deleteResult
 
+    private var allUsers = listOf<User>()
+    private var currentSearchQuery = ""
+    private var currentRoleFilter: String? = null
+    private var currentSortType = SortType.NEWEST_FIRST
+
     fun loadUsers() {
         viewModelScope.launch {
             try {
                 val result = userRepository.getAllUsers()
+                result.onSuccess { users ->
+                    allUsers = users
+                    applyFiltersAndSort()
+                }
                 _userList.postValue(result)
             } catch (e: Exception) {
                 _userList.postValue(Result.failure(e))
+                _filteredUserList.postValue(Result.failure(e))
             }
         }
+    }
+
+    fun searchUsers(query: String) {
+        currentSearchQuery = query
+        applyFiltersAndSort()
+    }
+
+    fun filterByRole(role: String?) {
+        currentRoleFilter = role
+        applyFiltersAndSort()
+    }
+
+    fun sortUsers(sortType: SortType) {
+        currentSortType = sortType
+        applyFiltersAndSort()
+    }
+
+    fun resetFilters() {
+        currentSearchQuery = ""
+        currentRoleFilter = null
+        currentSortType = SortType.NEWEST_FIRST
+        applyFiltersAndSort()
+    }
+
+    private fun applyFiltersAndSort() {
+        var filteredUsers = allUsers
+
+        // Apply search filter
+        if (currentSearchQuery.isNotEmpty()) {
+            filteredUsers = filteredUsers.filter { user ->
+                user.username.contains(currentSearchQuery, ignoreCase = true) ||
+                        user.email.contains(currentSearchQuery, ignoreCase = true) ||
+                        user.fullName.contains(currentSearchQuery, ignoreCase = true)
+            }
+        }
+
+        // Apply role filter
+        currentRoleFilter?.let { role ->
+            filteredUsers = filteredUsers.filter { user ->
+                user.role.equals(role, ignoreCase = true)
+            }
+        }
+
+        // Apply sorting
+        filteredUsers = when (currentSortType) {
+            SortType.NEWEST_FIRST -> filteredUsers.sortedByDescending { it.createdAt }
+            SortType.OLDEST_FIRST -> filteredUsers.sortedBy { it.createdAt }
+            SortType.NAME_A_Z -> filteredUsers.sortedBy {
+                if (it.fullName.isNotEmpty()) it.fullName else it.username
+            }
+            SortType.NAME_Z_A -> filteredUsers.sortedByDescending {
+                if (it.fullName.isNotEmpty()) it.fullName else it.username
+            }
+        }
+
+        _filteredUserList.postValue(Result.success(filteredUsers))
     }
 
     fun deleteUser(userId: String, userRole: String) {
@@ -77,7 +151,6 @@ class UserManagementViewModel : ViewModel() {
                     val result = staffRepository.deleteStaffByUserId(userId)
                     result.isSuccess
                 }
-                // HAPUS case Constants.ROLE_TRAINER
                 Constants.ROLE_ADMIN, Constants.ROLE_GUEST -> true
                 else -> true
             }
@@ -105,7 +178,6 @@ class UserManagementViewModel : ViewModel() {
                                 when (newRole) {
                                     Constants.ROLE_MEMBER -> createMemberProfileWithUserData(user, oldRole)
                                     Constants.ROLE_STAFF -> createStaffProfileWithUserData(user, oldRole)
-                                    // HAPUS case Constants.ROLE_TRAINER
                                     Constants.ROLE_ADMIN -> {
                                         val cleanupMsg = if (oldRole != Constants.ROLE_ADMIN) {
                                             " & data $oldRole dihapus"
@@ -155,8 +227,6 @@ class UserManagementViewModel : ViewModel() {
                             callback(false)
                         }
                     }
-
-                    // HAPUS case Constants.ROLE_TRAINER
 
                     Constants.ROLE_ADMIN, Constants.ROLE_GUEST -> {
                         callback(true)
@@ -234,8 +304,6 @@ class UserManagementViewModel : ViewModel() {
             }
         }
     }
-
-    // HAPUS createTrainerProfileWithUserData method
 
     private fun generateQRCode(userId: String): String {
         return "LUBANA_MEMBER_${userId.take(8).uppercase()}"

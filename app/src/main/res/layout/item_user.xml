@@ -98,7 +98,7 @@
             <Button
                 android:id="@+id/btnDeleteUser"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="36dp"
                 android:text="🗑️ Hapus"
                 android:textSize="12sp"
                 android:backgroundTint="@color/red"

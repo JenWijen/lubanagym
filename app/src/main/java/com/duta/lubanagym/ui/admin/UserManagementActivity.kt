@@ -1,12 +1,15 @@
 package com.duta.lubanagym.ui.admin
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.duta.lubanagym.databinding.ActivityUserManagementBinding
+import com.duta.lubanagym.utils.Constants
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class UserManagementActivity : AppCompatActivity() {
@@ -22,6 +25,7 @@ class UserManagementActivity : AppCompatActivity() {
 
         setupToolbar()
         setupRecyclerView()
+        setupSearchAndFilter()
         observeViewModel()
         loadUsers()
     }
@@ -47,7 +51,7 @@ class UserManagementActivity : AppCompatActivity() {
                     viewModel.updateUserRole(user.id, user.role, newRole)
                 }
             },
-            onDeleteUser = { user -> // NEW: Delete user callback
+            onDeleteUser = { user ->
                 showDeleteUserConfirmation(user)
             }
         )
@@ -58,11 +62,65 @@ class UserManagementActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupSearchAndFilter() {
+        // Search functionality
+        binding.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().trim()
+                viewModel.searchUsers(query)
+            }
+        })
+
+        // Filter by role
+        binding.spinnerRoleFilter.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val selectedRole = when (position) {
+                    0 -> null // All roles
+                    1 -> Constants.ROLE_GUEST
+                    2 -> Constants.ROLE_MEMBER
+                    3 -> Constants.ROLE_STAFF
+                    4 -> Constants.ROLE_ADMIN
+                    else -> null
+                }
+                viewModel.filterByRole(selectedRole)
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        })
+
+        // Sort options
+        binding.spinnerSort.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val sortType = when (position) {
+                    0 -> UserManagementViewModel.SortType.NEWEST_FIRST
+                    1 -> UserManagementViewModel.SortType.OLDEST_FIRST
+                    2 -> UserManagementViewModel.SortType.NAME_A_Z
+                    3 -> UserManagementViewModel.SortType.NAME_Z_A
+                    else -> UserManagementViewModel.SortType.NEWEST_FIRST
+                }
+                viewModel.sortUsers(sortType)
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        })
+
+        // Clear search button
+        binding.btnClearSearch.setOnClickListener {
+            binding.etSearch.text?.clear()
+            binding.spinnerRoleFilter.setSelection(0)
+            binding.spinnerSort.setSelection(0)
+            viewModel.resetFilters()
+        }
+    }
+
     private fun observeViewModel() {
-        viewModel.userList.observe(this) { result ->
+        viewModel.filteredUserList.observe(this) { result ->
             result.onSuccess { users ->
                 userAdapter.submitList(users)
                 binding.progressBar.visibility = View.GONE
+
+                // Update result count
+                binding.tvResultCount.text = "Menampilkan ${users.size} user"
 
                 if (users.isEmpty()) {
                     showEmptyState()
@@ -84,7 +142,6 @@ class UserManagementActivity : AppCompatActivity() {
             }
         }
 
-        // NEW: Observer for delete result
         viewModel.deleteResult.observe(this) { result ->
             result.onSuccess { message ->
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show()
@@ -95,7 +152,6 @@ class UserManagementActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Show delete confirmation dialog
     private fun showDeleteUserConfirmation(user: com.duta.lubanagym.data.model.User) {
         MaterialAlertDialogBuilder(this)
             .setTitle("🗑️ Konfirmasi Hapus User")
@@ -127,7 +183,6 @@ class UserManagementActivity : AppCompatActivity() {
             "guest" to Pair("👤 Guest", "Akses terbatas, belum menjadi member"),
             "member" to Pair("👥 Member", "Akses gym standar, data member"),
             "staff" to Pair("👨‍💼 Staff", "Bantuan operasional, data staff"),
-            "trainer" to Pair("🏋️ Trainer", "Pelatih fitness, data trainer"),
             "admin" to Pair("👨‍💻 Admin", "Akses penuh sistem")
         )
 
@@ -172,11 +227,12 @@ class UserManagementActivity : AppCompatActivity() {
     }
 
     private fun showEmptyState() {
-        Toast.makeText(this, "👤 Belum ada data user", Toast.LENGTH_SHORT).show()
+        binding.tvEmptyState.visibility = View.VISIBLE
+        binding.tvEmptyState.text = "👤 Tidak ada user yang sesuai dengan pencarian"
     }
 
     private fun hideEmptyState() {
-        // Nothing to hide since no empty state view
+        binding.tvEmptyState.visibility = View.GONE
     }
 
     private fun loadUsers() {

@@ -53,4 +53,66 @@
         <item>Assistant</item>
         <item>Supervisor</item>
     </string-array>
+
+    <!-- NEW: Filter Options -->
+    <string-array name="role_filter_options">
+        <item>Semua Role</item>
+        <item>Guest</item>
+        <item>Member</item>
+        <item>Staff</item>
+        <item>Admin</item>
+    </string-array>
+
+    <string-array name="sort_options">
+        <item>Terbaru</item>
+        <item>Terlama</item>
+        <item>Nama A-Z</item>
+        <item>Nama Z-A</item>
+    </string-array>
+
+    <string-array name="membership_filter_options">
+        <item>Semua Membership</item>
+        <item>🥉 Basic</item>
+        <item>🥈 Premium</item>
+        <item>🥇 VIP</item>
+    </string-array>
+
+    <string-array name="status_filter_options">
+        <item>Semua Status</item>
+        <item>Aktif</item>
+        <item>Tidak Aktif</item>
+    </string-array>
+
+    <string-array name="equipment_sort_options">
+        <item>Terbaru</item>
+        <item>Terlama</item>
+        <item>Nama A-Z</item>
+        <item>Nama Z-A</item>
+        <item>Kategori A-Z</item>
+    </string-array>
+
+    <string-array name="availability_filter_options">
+        <item>Semua Status</item>
+        <item>Tersedia</item>
+        <item>Maintenance</item>
+    </string-array>
+
+    <string-array name="trainer_sort_options">
+        <item>Terbaru</item>
+        <item>Terlama</item>
+        <item>Nama A-Z</item>
+        <item>Nama Z-A</item>
+        <item>Spesialisasi A-Z</item>
+    </string-array>
+
+    <string-array name="specialization_filter_options">
+        <item>Semua Spesialisasi</item>
+        <item>Weight Training</item>
+        <item>Cardio Training</item>
+        <item>Yoga</item>
+        <item>Pilates</item>
+        <item>Boxing</item>
+        <item>Functional Training</item>
+        <item>Nutrition Counseling</item>
+    </string-array>
 </resources>

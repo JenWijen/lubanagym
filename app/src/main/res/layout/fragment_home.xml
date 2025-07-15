@@ -55,7 +55,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Quick Stats -->
+            <!-- Quick Stats - UPDATED with IDs for dynamic updates -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -77,10 +77,12 @@
                         android:orientation="vertical"
                         android:gravity="center">
 
+                        <!-- UPDATED: Add ID for dynamic update -->
                         <TextView
+                            android:id="@+id/tvMemberCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="150+"
+                            android:text="Loading..."
                             android:textSize="24sp"
                             android:textStyle="bold"
                             android:textColor="@color/primary_color" />
@@ -106,10 +108,12 @@
                         android:orientation="vertical"
                         android:gravity="center">
 
+                        <!-- UPDATED: Add ID for dynamic update -->
                         <TextView
+                            android:id="@+id/tvTrainerCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="8"
+                            android:text="Loading..."
                             android:textSize="24sp"
                             android:textStyle="bold"
                             android:textColor="@color/primary_color" />
@@ -135,10 +139,12 @@
                         android:orientation="vertical"
                         android:gravity="center">
 
+                        <!-- UPDATED: Add ID for dynamic update -->
                         <TextView
+                            android:id="@+id/tvEquipmentCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="50+"
+                            android:text="Loading..."
                             android:textSize="24sp"
                             android:textStyle="bold"
                             android:textColor="@color/primary_color" />

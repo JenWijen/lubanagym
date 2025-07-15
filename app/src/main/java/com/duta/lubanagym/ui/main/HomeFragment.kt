@@ -5,8 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.duta.lubanagym.R
 import com.duta.lubanagym.databinding.FragmentHomeBinding
+import com.duta.lubanagym.ui.auth.LoginActivity
 import com.duta.lubanagym.utils.PreferenceHelper
 import com.duta.lubanagym.utils.Constants
 import java.text.SimpleDateFormat
@@ -17,6 +21,9 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var preferenceHelper: PreferenceHelper
+
+    // NEW: Add ViewModel untuk mendapatkan stats
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,6 +41,8 @@ class HomeFragment : Fragment() {
         setupWelcomeMessage()
         setupUserSpecificContent()
         setupClickListeners()
+        observeViewModel() // NEW: Observe stats
+        loadStats() // NEW: Load actual stats
     }
 
     private fun setupWelcomeMessage() {
@@ -123,9 +132,48 @@ class HomeFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnBecomeMember.setOnClickListener {
-            val intent = Intent(requireContext(), com.duta.lubanagym.ui.member.RegisterMemberActivity::class.java)
-            startActivity(intent)
+            // UPDATED: Check login status before proceeding
+            val isLoggedIn = preferenceHelper.getBoolean(Constants.PREF_IS_LOGGED_IN)
+
+            if (isLoggedIn) {
+                // User sudah login, arahkan ke RegisterMemberActivity
+                val intent = Intent(requireContext(), com.duta.lubanagym.ui.member.RegisterMemberActivity::class.java)
+                startActivity(intent)
+            } else {
+                // User belum login, arahkan ke LoginActivity
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                startActivity(intent)
+            }
         }
+    }
+
+    // NEW: Observe ViewModel untuk stats
+    private fun observeViewModel() {
+        viewModel.gymStats.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { stats ->
+                updateStatsDisplay(stats)
+            }.onFailure { error ->
+                // Gunakan default stats jika gagal load
+                updateStatsDisplay(GymStats())
+            }
+        }
+    }
+
+    // NEW: Load actual stats
+    private fun loadStats() {
+        viewModel.loadGymStats()
+    }
+
+    // NEW: Update stats display dengan data real
+    private fun updateStatsDisplay(stats: GymStats) {
+        // Update member count
+        binding.tvMemberCount?.text = "${stats.activeMembers}+"
+
+        // Update trainer count
+        binding.tvTrainerCount?.text = "${stats.activeTrainers}"
+
+        // Update equipment count
+        binding.tvEquipmentCount?.text = "${stats.availableEquipment}+"
     }
 
     override fun onResume() {
@@ -133,6 +181,7 @@ class HomeFragment : Fragment() {
         // Refresh content when user returns
         setupWelcomeMessage()
         setupUserSpecificContent()
+        loadStats() // NEW: Refresh stats on resume
     }
 
     override fun onDestroyView() {
