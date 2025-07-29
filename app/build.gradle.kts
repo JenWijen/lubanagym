@@ -92,6 +92,8 @@ dependencies {
     implementation(libs.glide)
     kapt(libs.compiler)
 
+    implementation(libs.androidx.exifinterface)
+
     // Networking
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

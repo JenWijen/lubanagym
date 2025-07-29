@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:hint="🔍 Cari user (nama, email, username)"
+                android:hint="🔍 Cari member (nama, email, phone)"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -89,7 +89,7 @@
                     android:id="@+id/tvResultCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Menampilkan 0 user"
+                    android:text="Menampilkan 0 member"
                     android:textSize="12sp"
                     android:textColor="@color/text_secondary"
                     android:textStyle="bold" />
@@ -104,14 +104,14 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- Filter Row -->
+                <!-- Filter Row 1 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginBottom="8dp">
 
-                    <!-- Role Filter -->
+                    <!-- Membership Filter -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -122,22 +122,22 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Filter Role"
+                            android:text="💳 Filter Membership"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary"
                             android:layout_marginBottom="4dp" />
 
                         <Spinner
-                            android:id="@+id/spinnerRoleFilter"
+                            android:id="@+id/spinnerMembershipFilter"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:entries="@array/role_filter_options"
+                            android:entries="@array/membership_filter_options"
                             android:background="@drawable/spinner_background" />
 
                     </LinearLayout>
 
-                    <!-- Sort Options -->
+                    <!-- Status Filter -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -148,20 +148,44 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Urutkan"
+                            android:text="🟢 Filter Status"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary"
                             android:layout_marginBottom="4dp" />
 
                         <Spinner
-                            android:id="@+id/spinnerSort"
+                            android:id="@+id/spinnerStatusFilter"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
-                            android:entries="@array/sort_options"
+                            android:entries="@array/status_filter_options"
                             android:background="@drawable/spinner_background" />
 
                     </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Sort Options -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📊 Urutkan"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="4dp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerSort"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:entries="@array/sort_options"
+                        android:background="@drawable/spinner_background" />
 
                 </LinearLayout>
 
@@ -188,7 +212,7 @@
         android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvUsers"
+            android:id="@+id/rvMembers"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="8dp"
@@ -199,7 +223,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Tidak ada user yang sesuai dengan pencarian"
+            android:text="👥 Belum ada member"
             android:textAlignment="center"
             android:textSize="16sp"
             android:textColor="@color/text_secondary"

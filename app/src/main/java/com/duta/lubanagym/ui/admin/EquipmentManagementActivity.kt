@@ -282,8 +282,9 @@ class EquipmentManagementActivity : AppCompatActivity() {
     }
 
     // FIXED: Improved saveEditEquipment with better error handling
+    // UPDATED: saveEditEquipment method dengan compression
     private fun saveEditEquipment(equipment: Equipment, dialogBinding: DialogEditEquipmentBinding, dialog: AlertDialog) {
-        // FIXED: Validate equipment ID again
+        // Validation
         if (equipment.id.isEmpty()) {
             Toast.makeText(this, "❌ Error: Equipment ID tidak valid", Toast.LENGTH_SHORT).show()
             return
@@ -301,10 +302,10 @@ class EquipmentManagementActivity : AppCompatActivity() {
             if (categoryPosition < categories.size) {
                 categories[categoryPosition]
             } else {
-                equipment.category // Keep original if index out of bounds
+                equipment.category
             }
         } else {
-            equipment.category // Keep original if nothing selected
+            equipment.category
         }
 
         if (validateEquipmentInput(name, description, category, instructions)) {
@@ -314,19 +315,28 @@ class EquipmentManagementActivity : AppCompatActivity() {
 
                     var imageUrl = equipment.imageUrl // Keep existing image by default
 
-                    // Upload new image if selected
+                    // Upload new image if selected with compression
                     selectedImageUri?.let { uri ->
-                        Toast.makeText(this@EquipmentManagementActivity, "📤 Mengupload foto baru...", Toast.LENGTH_SHORT).show()
-                        val uploadResult = cloudinaryService.uploadImage(uri, "equipment")
+                        // NEW: Show compression info
+                        val originalSizeKB = cloudinaryService.getImageSizeKB(this@EquipmentManagementActivity, uri)
+                        Toast.makeText(this@EquipmentManagementActivity,
+                            "📸 Foto asli: ${originalSizeKB}KB - Mengkompress...",
+                            Toast.LENGTH_SHORT).show()
+
+                        // UPDATED: Pass context for compression
+                        val uploadResult = cloudinaryService.uploadImage(uri, "equipment", this@EquipmentManagementActivity)
                         uploadResult.onSuccess { url ->
                             imageUrl = url
-                            Toast.makeText(this@EquipmentManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@EquipmentManagementActivity,
+                                "✅ Foto berhasil diupload (compressed to ~1MB)",
+                                Toast.LENGTH_SHORT).show()
                         }.onFailure { error ->
-                            Toast.makeText(this@EquipmentManagementActivity, "⚠️ Upload foto gagal: ${error.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this@EquipmentManagementActivity,
+                                "⚠️ Upload foto gagal: ${error.message}",
+                                Toast.LENGTH_LONG).show()
                         }
                     }
 
-                    // FIXED: Add more comprehensive update data
                     val updates = mapOf(
                         "name" to name,
                         "description" to description,
@@ -337,14 +347,10 @@ class EquipmentManagementActivity : AppCompatActivity() {
                         "updatedAt" to System.currentTimeMillis()
                     )
 
-                    android.util.Log.d("EquipmentEdit", "Updating equipment ${equipment.id} with data: $updates")
-
-                    // FIXED: Use equipment.id directly and add error handling
                     viewModel.updateEquipment(equipment.id, updates)
                     dialog.dismiss()
 
                 } catch (e: Exception) {
-                    android.util.Log.e("EquipmentEdit", "Error updating equipment: ${e.message}", e)
                     Toast.makeText(this@EquipmentManagementActivity, "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 } finally {
                     binding.progressBar.visibility = View.GONE
@@ -617,13 +623,23 @@ class EquipmentManagementActivity : AppCompatActivity() {
 
                 var imageUrl = ""
                 selectedImageUri?.let { uri ->
-                    Toast.makeText(this@EquipmentManagementActivity, "📤 Mengupload foto...", Toast.LENGTH_SHORT).show()
-                    val uploadResult = cloudinaryService.uploadImage(uri, "equipment")
+                    // NEW: Show image size before compression
+                    val originalSizeKB = cloudinaryService.getImageSizeKB(this@EquipmentManagementActivity, uri)
+                    Toast.makeText(this@EquipmentManagementActivity,
+                        "📸 Foto asli: ${originalSizeKB}KB - Mengkompress...",
+                        Toast.LENGTH_SHORT).show()
+
+                    // UPDATED: Pass context for compression
+                    val uploadResult = cloudinaryService.uploadImage(uri, "equipment", this@EquipmentManagementActivity)
                     uploadResult.onSuccess { url ->
                         imageUrl = url
-                        Toast.makeText(this@EquipmentManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@EquipmentManagementActivity,
+                            "✅ Foto berhasil diupload (compressed to ~1MB)",
+                            Toast.LENGTH_SHORT).show()
                     }.onFailure {
-                        Toast.makeText(this@EquipmentManagementActivity, "⚠️ Upload foto gagal, equipment akan disimpan tanpa foto", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@EquipmentManagementActivity,
+                            "⚠️ Upload foto gagal, equipment akan disimpan tanpa foto",
+                            Toast.LENGTH_LONG).show()
                     }
                 }
 
@@ -647,6 +663,7 @@ class EquipmentManagementActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun showDeleteConfirmation(equipment: Equipment) {
         MaterialAlertDialogBuilder(this)

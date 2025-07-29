@@ -8,7 +8,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
+import android.widget.AdapterView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,6 +46,9 @@ class TrainerManagementActivity : AppCompatActivity() {
     private var currentEditDialogBinding: DialogEditTrainerBinding? = null
     private var isEditMode = false
 
+    // Filter state
+    private var isFiltersVisible = false
+
     // Date picker variables
     private var selectedDateCalendar = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -60,6 +66,7 @@ class TrainerManagementActivity : AppCompatActivity() {
         setupImagePicker()
         setupToolbar()
         setupRecyclerView()
+        setupSearchAndFilter()
         setupClickListeners()
         observeViewModel()
         loadTrainers()
@@ -110,8 +117,79 @@ class TrainerManagementActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupSearchAndFilter() {
+        // Search functionality
+        binding.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().trim()
+                viewModel.searchTrainers(query)
+            }
+        })
+
+        // Toggle filters visibility
+        binding.btnToggleFilters.setOnClickListener {
+            toggleFiltersVisibility()
+        }
+
+        // Specialization filter
+        binding.spinnerSpecializationFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val specializations = resources.getStringArray(R.array.specialization_filter_options)
+                val selectedSpecialization = if (position == 0) null else specializations[position]
+                viewModel.filterBySpecialization(selectedSpecialization)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Status filter
+        binding.spinnerStatusFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val isActive = when (position) {
+                    0 -> null // Semua Status
+                    1 -> true // Aktif
+                    2 -> false // Tidak Aktif
+                    else -> null
+                }
+                viewModel.filterByStatus(isActive)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Sort options
+        binding.spinnerSort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val sortType = when (position) {
+                    0 -> TrainerManagementViewModel.SortType.NEWEST_FIRST
+                    1 -> TrainerManagementViewModel.SortType.OLDEST_FIRST
+                    2 -> TrainerManagementViewModel.SortType.NAME_A_Z
+                    3 -> TrainerManagementViewModel.SortType.NAME_Z_A
+                    4 -> TrainerManagementViewModel.SortType.SPECIALIZATION_A_Z
+                    else -> TrainerManagementViewModel.SortType.NEWEST_FIRST
+                }
+                viewModel.sortTrainers(sortType)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Clear search button
+        binding.btnClearSearch.setOnClickListener {
+            binding.etSearch.text?.clear()
+            binding.spinnerSpecializationFilter.setSelection(0)
+            binding.spinnerStatusFilter.setSelection(0)
+            binding.spinnerSort.setSelection(0)
+            viewModel.resetFilters()
+        }
+    }
+
+    private fun toggleFiltersVisibility() {
+        isFiltersVisible = !isFiltersVisible
+        binding.layoutFilters.visibility = if (isFiltersVisible) View.VISIBLE else View.GONE
+        binding.btnToggleFilters.text = if (isFiltersVisible) "🔼 Filter" else "🔽 Filter"
+    }
+
     private fun setupClickListeners() {
-        // ADD: Floating Action Button untuk tambah trainer
         binding.fabAddTrainer?.setOnClickListener {
             showAddTrainerDialog()
         }
@@ -137,7 +215,6 @@ class TrainerManagementActivity : AppCompatActivity() {
         }
     }
 
-    // NEW: Show add trainer dialog
     private fun showAddTrainerDialog() {
         val dialogBinding = DialogAddTrainerBinding.inflate(layoutInflater)
         currentAddDialogBinding = dialogBinding
@@ -177,6 +254,7 @@ class TrainerManagementActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    // UPDATED: saveNewTrainer method dengan compression
     private fun saveNewTrainer(dialogBinding: DialogAddTrainerBinding, dialog: AlertDialog) {
         val name = dialogBinding.etTrainerName.text.toString().trim()
         val phone = dialogBinding.etTrainerPhone.text.toString().trim()
@@ -209,13 +287,23 @@ class TrainerManagementActivity : AppCompatActivity() {
 
                     var imageUrl = ""
                     selectedImageUri?.let { uri ->
-                        Toast.makeText(this@TrainerManagementActivity, "📤 Mengupload foto...", Toast.LENGTH_SHORT).show()
-                        val uploadResult = cloudinaryService.uploadImage(uri, "trainers")
+                        // NEW: Show compression info
+                        val originalSizeKB = cloudinaryService.getImageSizeKB(this@TrainerManagementActivity, uri)
+                        Toast.makeText(this@TrainerManagementActivity,
+                            "📸 Foto trainer: ${originalSizeKB}KB - Mengkompress...",
+                            Toast.LENGTH_SHORT).show()
+
+                        // UPDATED: Pass context for compression
+                        val uploadResult = cloudinaryService.uploadImage(uri, "trainers", this@TrainerManagementActivity)
                         uploadResult.onSuccess { url ->
                             imageUrl = url
-                            Toast.makeText(this@TrainerManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@TrainerManagementActivity,
+                                "✅ Foto trainer berhasil diupload (compressed to ~1MB)",
+                                Toast.LENGTH_SHORT).show()
                         }.onFailure {
-                            Toast.makeText(this@TrainerManagementActivity, "⚠️ Upload foto gagal, trainer akan disimpan tanpa foto", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this@TrainerManagementActivity,
+                                "⚠️ Upload foto gagal, trainer akan disimpan tanpa foto",
+                                Toast.LENGTH_LONG).show()
                         }
                     }
 
@@ -258,7 +346,6 @@ class TrainerManagementActivity : AppCompatActivity() {
         }
     }
 
-    // Show edit trainer dialog (update existing method)
     private fun showEditTrainerDialog(trainer: Trainer) {
         val dialogBinding = DialogEditTrainerBinding.inflate(layoutInflater)
         currentEditDialogBinding = dialogBinding
@@ -308,6 +395,7 @@ class TrainerManagementActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    // UPDATED: saveEditTrainer method dengan compression
     private fun saveEditTrainer(trainer: Trainer, dialogBinding: DialogEditTrainerBinding, dialog: AlertDialog) {
         val name = dialogBinding.etTrainerName.text.toString().trim()
         val phone = dialogBinding.etTrainerPhone.text.toString().trim()
@@ -323,15 +411,25 @@ class TrainerManagementActivity : AppCompatActivity() {
 
                     var imageUrl = trainer.profileImageUrl // Keep existing image by default
 
-                    // Upload new image if selected
+                    // Upload new image if selected with compression
                     selectedImageUri?.let { uri ->
-                        Toast.makeText(this@TrainerManagementActivity, "📤 Mengupload foto...", Toast.LENGTH_SHORT).show()
-                        val uploadResult = cloudinaryService.uploadImage(uri, "trainers")
+                        // NEW: Show compression info
+                        val originalSizeKB = cloudinaryService.getImageSizeKB(this@TrainerManagementActivity, uri)
+                        Toast.makeText(this@TrainerManagementActivity,
+                            "📸 Foto trainer: ${originalSizeKB}KB - Mengkompress...",
+                            Toast.LENGTH_SHORT).show()
+
+                        // UPDATED: Pass context for compression
+                        val uploadResult = cloudinaryService.uploadImage(uri, "trainers", this@TrainerManagementActivity)
                         uploadResult.onSuccess { url ->
                             imageUrl = url
-                            Toast.makeText(this@TrainerManagementActivity, "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@TrainerManagementActivity,
+                                "✅ Foto trainer berhasil diupload (compressed)",
+                                Toast.LENGTH_SHORT).show()
                         }.onFailure {
-                            Toast.makeText(this@TrainerManagementActivity, "⚠️ Upload foto gagal, menggunakan foto lama", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this@TrainerManagementActivity,
+                                "⚠️ Upload foto gagal, menggunakan foto lama",
+                                Toast.LENGTH_LONG).show()
                         }
                     }
 
@@ -491,10 +589,14 @@ class TrainerManagementActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        viewModel.trainerList.observe(this) { result ->
+        // Observe filtered trainer list instead of regular trainer list
+        viewModel.filteredTrainerList.observe(this) { result ->
             result.onSuccess { trainers ->
                 trainerAdapter.submitList(trainers)
                 binding.progressBar.visibility = View.GONE
+
+                // Update result count
+                binding.tvResultCount.text = "Menampilkan ${trainers.size} trainer"
 
                 if (trainers.isEmpty()) {
                     showEmptyState()
@@ -507,7 +609,6 @@ class TrainerManagementActivity : AppCompatActivity() {
             }
         }
 
-        // NEW: Observer for create result
         viewModel.createResult.observe(this) { result ->
             result.onSuccess {
                 Toast.makeText(this, "✅ Trainer berhasil ditambahkan", Toast.LENGTH_SHORT).show()
@@ -558,12 +659,17 @@ class TrainerManagementActivity : AppCompatActivity() {
     }
 
     private fun showEmptyState() {
-        // You can add empty state view here if needed
-        Toast.makeText(this, "🏋️ Belum ada data trainer", Toast.LENGTH_SHORT).show()
+        binding.tvEmptyState.visibility = View.VISIBLE
+        val searchQuery = binding.etSearch.text.toString()
+        binding.tvEmptyState.text = if (searchQuery.isNotEmpty()) {
+            "🔍 Tidak ada trainer yang sesuai dengan pencarian '$searchQuery'"
+        } else {
+            "🏋️ Belum ada data trainer\n\nTambah trainer pertama dengan menekan tombol +"
+        }
     }
 
     private fun hideEmptyState() {
-        // Hide empty state view if exists
+        binding.tvEmptyState.visibility = View.GONE
     }
 
     private fun loadTrainers() {

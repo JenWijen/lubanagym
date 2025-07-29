@@ -12,7 +12,8 @@ import java.util.*
 
 class StaffAdapter(
     private val onStaffUpdate: (Staff, String, Any) -> Unit,
-    private val onDeleteStaff: (Staff) -> Unit
+    private val onDeleteStaff: (Staff) -> Unit,
+    private val onEditStaff: (Staff) -> Unit // ADD: Edit callback
 ) : ListAdapter<Staff, StaffAdapter.StaffViewHolder>(StaffDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StaffViewHolder {
@@ -46,6 +47,11 @@ class StaffAdapter(
                     if (isChecked != staff.isActive) {
                         onStaffUpdate(staff, "isActive", isChecked)
                     }
+                }
+
+                // ADD: Setup edit button
+                btnEditStaff.setOnClickListener {
+                    onEditStaff(staff)
                 }
 
                 // Setup delete button

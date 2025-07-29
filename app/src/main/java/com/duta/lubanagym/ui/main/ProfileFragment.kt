@@ -541,6 +541,7 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    // UPDATED: saveProfile method dengan compression
     private fun saveProfile() {
         val fullName = binding.etFullName.text.toString().trim()
         val phone = binding.etPhone.text.toString().trim()
@@ -582,17 +583,27 @@ class ProfileFragment : Fragment() {
             try {
                 var profileImageUrl = currentUser?.profileImageUrl ?: ""
 
-                // Upload new profile image if selected
+                // Upload new profile image if selected with compression
                 selectedImageUri?.let { uri ->
                     binding.progressBar.visibility = View.VISIBLE
-                    Toast.makeText(requireContext(), "📤 Mengupload foto profil...", Toast.LENGTH_SHORT).show()
 
-                    val uploadResult = cloudinaryService.uploadImage(uri, "profiles")
+                    // NEW: Show image info before compression
+                    val originalSizeKB = cloudinaryService.getImageSizeKB(requireContext(), uri)
+                    Toast.makeText(requireContext(),
+                        "📸 Foto profil: ${originalSizeKB}KB - Mengkompress ke 1MB...",
+                        Toast.LENGTH_SHORT).show()
+
+                    // UPDATED: Pass context for compression
+                    val uploadResult = cloudinaryService.uploadImage(uri, "profiles", requireContext())
                     uploadResult.onSuccess { url ->
                         profileImageUrl = url
-                        Toast.makeText(requireContext(), "✅ Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(),
+                            "✅ Foto profil berhasil diupload (compressed)",
+                            Toast.LENGTH_SHORT).show()
                     }.onFailure { error ->
-                        Toast.makeText(requireContext(), "⚠️ Upload foto gagal: ${error.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(requireContext(),
+                            "⚠️ Upload foto gagal: ${error.message}",
+                            Toast.LENGTH_LONG).show()
                         // Continue with profile update even if image upload fails
                     }
                 }

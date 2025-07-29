@@ -167,13 +167,13 @@ class HomeFragment : Fragment() {
     // NEW: Update stats display dengan data real
     private fun updateStatsDisplay(stats: GymStats) {
         // Update member count
-        binding.tvMemberCount?.text = "${stats.activeMembers}+"
+        binding.tvMemberCount?.text = "${stats.activeMembers}"
 
         // Update trainer count
         binding.tvTrainerCount?.text = "${stats.activeTrainers}"
 
         // Update equipment count
-        binding.tvEquipmentCount?.text = "${stats.availableEquipment}+"
+        binding.tvEquipmentCount?.text = "${stats.availableEquipment}"
     }
 
     override fun onResume() {

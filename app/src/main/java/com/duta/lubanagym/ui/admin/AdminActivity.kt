@@ -56,6 +56,7 @@ class AdminActivity : AppCompatActivity() {
         if (userRole == Constants.ROLE_STAFF) {
             // Staff can access limited features
             binding.btnUserManagement.visibility = android.view.View.GONE
+            binding.btnStaffManagement.visibility = android.view.View.GONE
         }
     }
 

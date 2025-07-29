@@ -18,6 +18,9 @@ class UserManagementActivity : AppCompatActivity() {
     private val viewModel: UserManagementViewModel by viewModels()
     private lateinit var userAdapter: UserAdapter
 
+    // NEW: Track filter visibility
+    private var isFiltersVisible = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUserManagementBinding.inflate(layoutInflater)
@@ -63,6 +66,11 @@ class UserManagementActivity : AppCompatActivity() {
     }
 
     private fun setupSearchAndFilter() {
+        // NEW: Setup toggle filters button
+        binding.btnToggleFilters.setOnClickListener {
+            toggleFiltersVisibility()
+        }
+
         // Search functionality
         binding.etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -106,11 +114,52 @@ class UserManagementActivity : AppCompatActivity() {
 
         // Clear search button
         binding.btnClearSearch.setOnClickListener {
-            binding.etSearch.text?.clear()
-            binding.spinnerRoleFilter.setSelection(0)
-            binding.spinnerSort.setSelection(0)
-            viewModel.resetFilters()
+            clearSearchAndFilters()
         }
+    }
+
+    // NEW: Toggle filters visibility with animation
+    private fun toggleFiltersVisibility() {
+        isFiltersVisible = !isFiltersVisible
+
+        if (isFiltersVisible) {
+            // Show filters with slide down animation
+            binding.layoutFilters.visibility = View.VISIBLE
+            binding.layoutFilters.alpha = 0f
+            binding.layoutFilters.animate()
+                .alpha(1f)
+                .setDuration(300)
+                .start()
+
+            // Update button text and icon
+            binding.btnToggleFilters.text = "🔼Filter"
+
+            // Show tips message
+            Toast.makeText(this, "💡 Filter dan sorting sudah tersedia", Toast.LENGTH_SHORT).show()
+
+        } else {
+            // Hide filters with slide up animation
+            binding.layoutFilters.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction {
+                    binding.layoutFilters.visibility = View.GONE
+                }
+                .start()
+
+            // Update button text and icon
+            binding.btnToggleFilters.text = "🔽Filter"
+        }
+    }
+
+    // NEW: Clear search and reset filters
+    private fun clearSearchAndFilters() {
+        binding.etSearch.text?.clear()
+        binding.spinnerRoleFilter.setSelection(0)
+        binding.spinnerSort.setSelection(0)
+        viewModel.resetFilters()
+
+        Toast.makeText(this, "🔄 Filter dan pencarian telah direset", Toast.LENGTH_SHORT).show()
     }
 
     private fun observeViewModel() {
@@ -243,5 +292,25 @@ class UserManagementActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
+    }
+
+    // NEW: Save filter state when activity is destroyed
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("isFiltersVisible", isFiltersVisible)
+    }
+
+    // NEW: Restore filter state when activity is recreated
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        isFiltersVisible = savedInstanceState.getBoolean("isFiltersVisible", false)
+
+        if (isFiltersVisible) {
+            binding.layoutFilters.visibility = View.VISIBLE
+            binding.btnToggleFilters.text = "🔼Filter"
+        } else {
+            binding.layoutFilters.visibility = View.GONE
+            binding.btnToggleFilters.text = "🔽Filter"
+        }
     }
 }

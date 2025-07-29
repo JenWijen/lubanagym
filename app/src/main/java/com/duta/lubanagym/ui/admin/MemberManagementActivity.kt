@@ -1,6 +1,8 @@
 package com.duta.lubanagym.ui.admin
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -9,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.duta.lubanagym.R
 import com.duta.lubanagym.data.model.Member
-import com.duta.lubanagym.databinding.ActivityMemberManagementSimplifiedBinding
+import com.duta.lubanagym.databinding.ActivityMemberManagementBinding
 import com.duta.lubanagym.databinding.DialogMemberDetailBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.SimpleDateFormat
@@ -17,17 +19,18 @@ import java.util.*
 
 class MemberManagementActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMemberManagementSimplifiedBinding
+    private lateinit var binding: ActivityMemberManagementBinding
     private val viewModel: MemberManagementViewModel by viewModels()
     private lateinit var memberAdapter: MemberAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMemberManagementSimplifiedBinding.inflate(layoutInflater)
+        binding = ActivityMemberManagementBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupToolbar()
         setupRecyclerView()
+        setupSearchAndFilter()
         observeViewModel()
         loadMembers()
     }
@@ -67,15 +70,92 @@ class MemberManagementActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupSearchAndFilter() {
+        // Toggle filter visibility
+        binding.btnToggleFilters.setOnClickListener {
+            val isVisible = binding.layoutFilters.visibility == View.VISIBLE
+            binding.layoutFilters.visibility = if (isVisible) View.GONE else View.VISIBLE
+            binding.btnToggleFilters.text = if (isVisible) "🔽Filter" else "🔼Filter"
+        }
+
+        // Search functionality
+        binding.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().trim()
+                viewModel.searchMembers(query)
+            }
+        })
+
+        // Membership filter
+        binding.spinnerMembershipFilter.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val selectedMembership = when (position) {
+                    0 -> null // Semua Membership
+                    1 -> "basic"
+                    2 -> "premium"
+                    3 -> "vip"
+                    else -> null
+                }
+                viewModel.filterByMembership(selectedMembership)
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        })
+
+        // Status filter
+        binding.spinnerStatusFilter.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val selectedStatus = when (position) {
+                    0 -> null // Semua Status
+                    1 -> true // Aktif
+                    2 -> false // Tidak Aktif
+                    else -> null
+                }
+                viewModel.filterByStatus(selectedStatus)
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        })
+
+        // Sort options
+        binding.spinnerSort.setOnItemSelectedListener(object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val sortType = when (position) {
+                    0 -> MemberManagementViewModel.SortType.NEWEST_FIRST
+                    1 -> MemberManagementViewModel.SortType.OLDEST_FIRST
+                    2 -> MemberManagementViewModel.SortType.NAME_A_Z
+                    3 -> MemberManagementViewModel.SortType.NAME_Z_A
+                    4 -> MemberManagementViewModel.SortType.EXPIRY_SOON
+                    5 -> MemberManagementViewModel.SortType.EXPIRY_LATEST
+                    else -> MemberManagementViewModel.SortType.NEWEST_FIRST
+                }
+                viewModel.sortMembers(sortType)
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        })
+
+        // Clear filters button
+        binding.btnClearSearch.setOnClickListener {
+            binding.etSearch.text?.clear()
+            binding.spinnerMembershipFilter.setSelection(0)
+            binding.spinnerStatusFilter.setSelection(0)
+            binding.spinnerSort.setSelection(0)
+            viewModel.resetFilters()
+        }
+    }
+
     private fun observeViewModel() {
-        viewModel.memberList.observe(this) { result ->
+        viewModel.filteredMemberList.observe(this) { result ->
             result.onSuccess { members ->
                 memberAdapter.submitList(members)
                 binding.progressBar.visibility = View.GONE
 
+                // Update result count
+                binding.tvResultCount.text = "Menampilkan ${members.size} member"
+
                 if (members.isEmpty()) {
                     binding.tvEmptyState.visibility = View.VISIBLE
-                    binding.tvEmptyState.text = "👥 Belum ada member\n\nMember akan otomatis muncul ketika user role diubah ke 'member' di User Management"
+                    binding.tvEmptyState.text = "👥 Tidak ada member yang sesuai dengan pencarian"
                 } else {
                     binding.tvEmptyState.visibility = View.GONE
                 }
@@ -95,7 +175,6 @@ class MemberManagementActivity : AppCompatActivity() {
         }
     }
 
-    // UPDATED: Show member detail dialog with profile image
     private fun showMemberDetail(member: Member) {
         val dialogBinding = DialogMemberDetailBinding.inflate(layoutInflater)
 
