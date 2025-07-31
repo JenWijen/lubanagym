@@ -26,10 +26,24 @@ class ForgotPasswordActivity : AppCompatActivity() {
     }
 
     private fun setupToolbar() {
+        // FIXED: Use safe toolbar setup with try-catch
         binding.toolbar?.let { toolbar ->
-            setSupportActionBar(toolbar)
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.title = "Lupa Password"
+            try {
+                setSupportActionBar(toolbar)
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                supportActionBar?.title = "Lupa Password"
+            } catch (e: Exception) {
+                // Fallback: Setup toolbar manually without setSupportActionBar
+                toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+                toolbar.setNavigationOnClickListener {
+                    if (currentStep == 2) {
+                        showStep1()
+                    } else {
+                        finish()
+                    }
+                }
+                toolbar.title = "Lupa Password"
+            }
         }
     }
 
