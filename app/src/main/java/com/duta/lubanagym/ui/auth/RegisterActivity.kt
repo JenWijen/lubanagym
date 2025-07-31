@@ -63,7 +63,7 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        // Register dengan email/password (tanpa token)
+        // Register dengan email/password
         binding.btnRegister.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val username = binding.etUsername.text.toString().trim()
@@ -102,24 +102,28 @@ class RegisterActivity : AppCompatActivity() {
                 binding.etEmail.error = "Email tidak boleh kosong"
                 return false
             }
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
-                binding.etEmail.error = "Format email tidak valid"
+            !isValidEmail(email) -> {
+                binding.etEmail.error = "Format email tidak valid. Email harus mengandung kombinasi huruf dan angka, minimal 8 karakter"
                 return false
             }
             username.isEmpty() -> {
                 binding.etUsername.error = "Username tidak boleh kosong"
                 return false
             }
-            username.length < 3 -> {
-                binding.etUsername.error = "Username minimal 3 karakter"
+            !isValidUsername(username) -> {
+                binding.etUsername.error = "Username harus terdiri dari huruf saja (a-z, A-Z) minimal 3 karakter"
                 return false
             }
             password.isEmpty() -> {
                 binding.etPassword.error = "Password tidak boleh kosong"
                 return false
             }
-            password.length < 6 -> {
-                binding.etPassword.error = "Password minimal 6 karakter"
+            password.length < 8 -> {
+                binding.etPassword.error = "Password minimal 8 karakter"
+                return false
+            }
+            !isValidPassword(password) -> {
+                binding.etPassword.error = "Password harus mengandung kombinasi huruf dan angka"
                 return false
             }
             password != confirmPassword -> {
@@ -128,6 +132,29 @@ class RegisterActivity : AppCompatActivity() {
             }
             else -> return true
         }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailPattern = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        val regex = Regex(emailPattern)
+
+        // Email harus mengandung kombinasi huruf dan angka
+        val hasLetter = email.any { it.isLetter() }
+        val hasDigit = email.any { it.isDigit() }
+
+        return regex.matches(email) && hasLetter && hasDigit && email.length >= 8
+    }
+
+    private fun isValidUsername(username: String): Boolean {
+        // Username hanya boleh huruf (a-z, A-Z)
+        val regex = Regex("^[a-zA-Z]+$")
+        return regex.matches(username) && username.length >= 3
+    }
+
+    private fun isValidPassword(password: String): Boolean {
+        val hasLetter = password.any { it.isLetter() }
+        val hasDigit = password.any { it.isDigit() }
+        return hasLetter && hasDigit
     }
 
     private fun observeViewModel() {

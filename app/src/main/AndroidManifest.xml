@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Internet permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-    <!-- Storage permissions untuk Android 12 dan bawah -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Storage permissions untuk Android 12 dan bawah -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-
-    <!-- Storage permissions untuk Android 13+ (API 33+) -->
+        android:maxSdkVersion="32" /> <!-- Storage permissions untuk Android 13+ (API 33+) -->
     <uses-permission
         android:name="android.permission.READ_MEDIA_IMAGES"
-        android:minSdkVersion="33" />
-
-    <!-- Camera permission (opsional untuk foto) -->
-    <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- Queries untuk intent image picker -->
+        android:minSdkVersion="33" /> <!-- Camera permission (opsional untuk foto) -->
+    <uses-permission android:name="android.permission.CAMERA" /> <!-- Queries untuk intent image picker -->
     <queries>
         <intent>
             <action android:name="android.intent.action.GET_CONTENT" />
+
             <data android:mimeType="image/*" />
         </intent>
         <intent>
             <action android:name="android.intent.action.PICK" />
+
             <data android:mimeType="image/*" />
         </intent>
     </queries>
@@ -38,91 +31,80 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LubanaGym"
-        tools:targetApi="34"
-        android:requestLegacyExternalStorage="true">
-
+        tools:targetApi="34">
+        <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.splash.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.LubanaGym.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.auth.LoginActivity"
             android:exported="false"
             android:theme="@style/Theme.LubanaGym.NoActionBar" />
-
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:exported="false"
             android:theme="@style/Theme.LubanaGym.NoActionBar" />
-
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="false"
             android:theme="@style/Theme.LubanaGym" />
-
         <activity
             android:name=".ui.admin.QRScannerActivity"
             android:exported="false"
             android:parentActivityName=".ui.admin.AdminActivity"
-            android:theme="@style/Theme.LubanaGym.Admin"
-            android:screenOrientation="portrait" />
-
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.LubanaGym.Admin" />
         <activity
             android:name=".ui.member.RegisterMemberActivity"
             android:exported="false"
-            android:theme="@style/Theme.LubanaGym.NoActionBar" />
-
-        <!-- ADMIN ACTIVITIES - Gunakan theme khusus -->
+            android:theme="@style/Theme.LubanaGym.NoActionBar" /> <!-- ADMIN ACTIVITIES - Gunakan theme khusus -->
         <activity
             android:name=".ui.admin.AdminActivity"
             android:exported="false"
             android:theme="@style/Theme.LubanaGym.Admin" />
-
         <activity
             android:name=".ui.admin.UserManagementActivity"
             android:exported="false"
             android:parentActivityName=".ui.admin.AdminActivity"
             android:theme="@style/Theme.LubanaGym.Admin" />
-
         <activity
             android:name=".ui.admin.MemberManagementActivity"
             android:exported="false"
             android:parentActivityName=".ui.admin.AdminActivity"
             android:theme="@style/Theme.LubanaGym.Admin" />
-
         <activity
             android:name=".ui.admin.StaffManagementActivity"
             android:exported="false"
             android:parentActivityName=".ui.admin.AdminActivity"
             android:theme="@style/Theme.LubanaGym.Admin" />
-
         <activity
             android:name=".ui.admin.TrainerManagementActivity"
             android:exported="false"
             android:parentActivityName=".ui.admin.AdminActivity"
             android:theme="@style/Theme.LubanaGym.Admin" />
-
         <activity
             android:name=".ui.admin.EquipmentManagementActivity"
             android:exported="false"
             android:parentActivityName=".ui.admin.AdminActivity"
             android:theme="@style/Theme.LubanaGym.Admin" />
-
         <activity
             android:name=".ui.admin.TokenManagementActivity"
             android:exported="false"
             android:parentActivityName=".ui.admin.AdminActivity"
             android:theme="@style/Theme.LubanaGym.Admin" />
-
     </application>
 
 </manifest>

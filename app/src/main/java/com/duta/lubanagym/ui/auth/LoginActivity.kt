@@ -71,12 +71,12 @@ class LoginActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         // Email/Password Login
         binding.btnLogin.setOnClickListener {
-            val email = binding.etEmail.text.toString().trim()
+            val emailOrUsername = binding.etEmailOrUsername.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
-            if (validateInput(email, password)) {
+            if (validateInput(emailOrUsername, password)) {
                 lifecycleScope.launch {
-                    viewModel.login(email, password)
+                    viewModel.login(emailOrUsername, password)
                 }
             }
         }
@@ -84,6 +84,11 @@ class LoginActivity : AppCompatActivity() {
         // Google Sign-In
         binding.btnGoogleSignIn.setOnClickListener {
             signInWithGoogle()
+        }
+
+        // Forgot Password
+        binding.tvForgotPassword.setOnClickListener {
+            startActivity(Intent(this, ForgotPasswordActivity::class.java))
         }
 
         binding.tvRegister.setOnClickListener {
@@ -103,26 +108,57 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun validateInput(email: String, password: String): Boolean {
+    private fun validateInput(emailOrUsername: String, password: String): Boolean {
         when {
-            email.isEmpty() -> {
-                binding.etEmail.error = "Email tidak boleh kosong"
+            emailOrUsername.isEmpty() -> {
+                binding.etEmailOrUsername.error = "Email/Username tidak boleh kosong"
                 return false
             }
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
-                binding.etEmail.error = "Format email tidak valid"
+            emailOrUsername.contains("@") && !isValidEmail(emailOrUsername) -> {
+                binding.etEmailOrUsername.error = "Format email tidak valid. Email harus mengandung kombinasi huruf dan angka, minimal 8 karakter"
+                return false
+            }
+            !emailOrUsername.contains("@") && !isValidUsername(emailOrUsername) -> {
+                binding.etEmailOrUsername.error = "Username harus terdiri dari huruf saja (a-z, A-Z) minimal 3 karakter"
                 return false
             }
             password.isEmpty() -> {
                 binding.etPassword.error = "Password tidak boleh kosong"
                 return false
             }
-            password.length < 6 -> {
-                binding.etPassword.error = "Password minimal 6 karakter"
+            password.length < 8 -> {
+                binding.etPassword.error = "Password minimal 8 karakter"
+                return false
+            }
+            !isValidPassword(password) -> {
+                binding.etPassword.error = "Password harus mengandung kombinasi huruf dan angka"
                 return false
             }
             else -> return true
         }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailPattern = "^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+        val regex = Regex(emailPattern)
+
+        // Email harus mengandung kombinasi huruf dan angka
+        val hasLetter = email.any { it.isLetter() }
+        val hasDigit = email.any { it.isDigit() }
+
+        return regex.matches(email) && hasLetter && hasDigit && email.length >= 8
+    }
+
+    private fun isValidUsername(username: String): Boolean {
+        // Username hanya boleh huruf (a-z, A-Z)
+        val regex = Regex("^[a-zA-Z]+$")
+        return regex.matches(username) && username.length >= 3
+    }
+
+    private fun isValidPassword(password: String): Boolean {
+        val hasLetter = password.any { it.isLetter() }
+        val hasDigit = password.any { it.isDigit() }
+        return hasLetter && hasDigit
     }
 
     private fun observeViewModel() {
@@ -133,7 +169,7 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "✅ Login berhasil! Selamat datang ${user.username}", Toast.LENGTH_SHORT).show()
                 navigateBasedOnRole(user.role)
             }.onFailure { error ->
-                Toast.makeText(this, "❌ Login gagal: ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "❌ Login gagal: ${error.message}", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -144,7 +180,7 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "✅ Google Sign-In berhasil! Selamat datang ${user.fullName.ifEmpty { user.username }}", Toast.LENGTH_SHORT).show()
                 navigateBasedOnRole(user.role)
             }.onFailure { error ->
-                Toast.makeText(this, "❌ Google Sign-In gagal: ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "❌ Google Sign-In gagal: ${error.message}", Toast.LENGTH_LONG).show()
             }
         }
 
