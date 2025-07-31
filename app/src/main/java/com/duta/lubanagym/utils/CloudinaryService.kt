@@ -33,7 +33,7 @@ class CloudinaryService {
         }
     }
 
-    // UPDATED: Metode upload dengan compress otomatis
+    // UPDATED: Metode upload dengan compress otomatis dan fixed transformations
     suspend fun uploadImage(uri: Uri, folder: String = "lubana_gym", context: Context? = null): Result<String> {
         return suspendCancellableCoroutine { continuation ->
             try {
@@ -56,16 +56,8 @@ class CloudinaryService {
                 uploadRequest
                     .option("folder", folder)
                     .option("resource_type", "image")
-                    .option("quality", "auto")
-                    .option("fetch_format", "auto")
-                    .option("transformation", listOf(
-                        mapOf(
-                            "width" to 800,
-                            "height" to 800,
-                            "crop" to "limit",
-                            "quality" to "auto:good"
-                        )
-                    ))
+                    // FIXED: Removed transformation option that was causing errors
+                    // Instead, we'll use proper resize during compression
                     .callback(object : UploadCallback {
                         override fun onStart(requestId: String) {
                             // Upload started
@@ -99,7 +91,7 @@ class CloudinaryService {
         }
     }
 
-    // NEW: Metode compress image
+    // Improved compress image method to handle resizing properly
     private fun compressImage(context: Context, uri: Uri, maxSizeKB: Int = 1024): ByteArray? {
         return try {
             val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
@@ -113,8 +105,8 @@ class CloudinaryService {
                 val (width, height) = calculateOptimalDimensions(
                     rotatedBitmap.width,
                     rotatedBitmap.height,
-                    maxWidth = 1080,
-                    maxHeight = 1080
+                    maxWidth = 800,  // Reduced from 1080 to 800
+                    maxHeight = 800  // Reduced from 1080 to 800
                 )
 
                 // Resize bitmap
@@ -141,8 +133,8 @@ class CloudinaryService {
     private fun calculateOptimalDimensions(
         originalWidth: Int,
         originalHeight: Int,
-        maxWidth: Int = 1080,
-        maxHeight: Int = 1080
+        maxWidth: Int = 800,
+        maxHeight: Int = 800
     ): Pair<Int, Int> {
         if (originalWidth <= maxWidth && originalHeight <= maxHeight) {
             return Pair(originalWidth, originalHeight)
@@ -194,7 +186,7 @@ class CloudinaryService {
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
-    // NEW: Compress bitmap ke target size
+    // IMPROVED: Better quality settings for JPEG compression
     private fun compressBitmapToTargetSize(bitmap: Bitmap, maxSizeKB: Int): ByteArray {
         val maxSizeBytes = maxSizeKB * 1024
         var quality = 90
@@ -218,7 +210,7 @@ class CloudinaryService {
         return compressedBytes
     }
 
-    // UPDATED: Upload bitmap dengan compress
+    // UPDATED: Upload bitmap with compress - simplified approach
     suspend fun uploadBitmap(
         bitmap: Bitmap,
         folder: String = "lubana_gym",
@@ -232,16 +224,7 @@ class CloudinaryService {
                 MediaManager.get().upload(compressedBytes)
                     .option("folder", folder)
                     .option("resource_type", "image")
-                    .option("quality", "auto")
-                    .option("fetch_format", "auto")
-                    .option("transformation", listOf(
-                        mapOf(
-                            "width" to 800,
-                            "height" to 800,
-                            "crop" to "limit",
-                            "quality" to "auto:good"
-                        )
-                    ))
+                    // FIXED: Removed transformation parameters here too
                     .callback(object : UploadCallback {
                         override fun onStart(requestId: String) {}
 
